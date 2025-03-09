@@ -45,20 +45,10 @@ gcloud container clusters get-credentials $CLUSTER_NAME --region $REGION
 
 2. 编辑 `helm-context/values.yaml` 文件，配置 GCS 存储桶挂载：
    ```yaml
-   # <GCS_BUCKET>: 您的 Cloud Storage 存储桶名称，不要包含 gs:// 前缀
+   # <GCS_BUCKET>: 您的 Cloud Storage 存储桶名称，不要包含 gs:// 前缀，不要漏掉双引号
    jitGcsMount:
-     bucketName: <GCS_BUCKET>
+     bucketName: "<GCS_BUCKET>"
      mountPath: "/gcs"
-   ```
-
-3. 如果您不需要使用 GCS 存储桶，可以通过注释掉该部分并修改 `selected-configuration.yaml` 中的 `data` 部分来使用模拟数据：
-   ```yaml
-   data:
-     data_impl: mock
-     splits_string: 99990,8,2
-     # ...其他配置...
-     index_mapping_dir: null
-     data_prefix: null
    ```
 
 ### 3. 选择训练配置
@@ -106,8 +96,7 @@ helm uninstall $WORKLOAD_NAME
 
 ## 文件结构
 
-- `command.sh` - 运行训练的主要脚本
+- `command.sh` - 训练演示脚本
 - `docker/` - 包含 Docker 配置
 - `helm-context/` - Helm chart 配置
 - `recipe/` - 模型训练配置文件
-- `selected-configuration.yaml` - 当前选定的配置

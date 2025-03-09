@@ -33,7 +33,35 @@ gcloud config set compute/zone ${ZONE}
 gcloud container clusters get-credentials $CLUSTER_NAME --region $REGION
 ```
 
-### 2. 选择训练配置
+### 2. 创建并配置 GCS 存储桶
+
+训练作业需要访问 GCS 存储桶来存储和读取数据。请按照以下步骤操作：
+
+1. 创建一个 GCS 存储桶（如果尚未创建）：
+   ```bash
+   export GCS_BUCKET=your-bucket-name
+   gsutil mb -l us-central1 gs://${GCS_BUCKET}
+   ```
+
+2. 编辑 `helm-context/values.yaml` 文件，配置 GCS 存储桶挂载：
+   ```yaml
+   # <GCS_BUCKET>: 您的 Cloud Storage 存储桶名称，不要包含 gs:// 前缀
+   jitGcsMount:
+     bucketName: <GCS_BUCKET>
+     mountPath: "/gcs"
+   ```
+
+3. 如果您不需要使用 GCS 存储桶，可以通过注释掉该部分并修改 `selected-configuration.yaml` 中的 `data` 部分来使用模拟数据：
+   ```yaml
+   data:
+     data_impl: mock
+     splits_string: 99990,8,2
+     # ...其他配置...
+     index_mapping_dir: null
+     data_prefix: null
+   ```
+
+### 3. 选择训练配置
 
 ```bash
 # 选择一个配置（取消注释您想使用的配置）
@@ -46,7 +74,7 @@ export RECIPE_NAME=llama3_8b_fp8
 cp recipe/$RECIPE_NAME.yaml selected-configuration.yaml
 ```
 
-### 3. 启动工作负载
+### 4. 启动工作负载
 
 ```bash
 RECIPE_NAME_UPDATE=${RECIPE_NAME//_/-}
@@ -54,14 +82,19 @@ export WORKLOAD_NAME=$USER-$RECIPE_NAME_UPDATE-16gpu
 helm install $WORKLOAD_NAME helm-context/
 ```
 
-### 4. 检查工作负载状态
+### 5. 检查工作负载状态
 
 ```bash
 kubectl get pods | grep $WORKLOAD_NAME
 kubectl logs <pod-name>
 ```
 
-### 5. 卸载工作负载
+如需持续查看日志，可以使用 `-f` 参数：
+```bash
+kubectl logs -f <pod-name>
+```
+
+### 6. 卸载工作负载
 
 ```bash
 helm uninstall $WORKLOAD_NAME

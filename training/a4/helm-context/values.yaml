@@ -24,7 +24,7 @@ volumes:
   # Just-in-Time GCS mounts. This requires 'gcsfuse' binary present in the main container:
   # Note: For expedience it was only implemented it for a single bucket (not an array). 
   jitGcsMount:
-    bucketName: "benchmark-artifacts"
+    bucketName: 
     mountPath: "/gcs"
 
 gcsDownload: # downloads or synchronizes contents of a GCS bucket folder on initialization

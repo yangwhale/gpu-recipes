@@ -4,8 +4,11 @@
 
 ## 支持的模型
 
-- ✅ Llama3-8B - 已准备就绪
-- 🚧 Mixtral-8x7B - 开发中
+- ✅ Llama3-8B FP8 - 已准备就绪
+- ✅ Mixtral-8x7B FP8 - 已准备就绪
+- 🚧 Llama-3.1-70B FP8 - 开发中
+- 🚧 Llama3-8B BF16 - 开发中
+- 🚧 Mixtral-8x7B BF16 - 开发中
 
 ## 可用配置
 
@@ -15,6 +18,7 @@
 |------|---------|---------|
 | Llama3-8B | BF16 | `recipe/llama3_8b_bf16.yaml` |
 | Llama3-8B | FP8 | `recipe/llama3_8b_fp8.yaml` |
+| Llama-3.1-70B | FP8 | `recipe/llama-3.1-70b-fp8.yaml` |
 | Mixtral-8x7B | BF16 | `recipe/mixtral8x7b_bf16.yaml` |
 | Mixtral-8x7B | FP8 | `recipe/mixtral8x7b_fp8.yaml` |
 
@@ -57,6 +61,7 @@ gcloud container clusters get-credentials $CLUSTER_NAME --region $REGION
 # 选择一个配置（取消注释您想使用的配置）
 # export RECIPE_NAME=llama3_8b_bf16
 export RECIPE_NAME=llama3_8b_fp8
+# export RECIPE_NAME=llama-3.1-70b-fp8
 # export RECIPE_NAME=mixtral8x7b_bf16
 # export RECIPE_NAME=mixtral8x7b_fp8
 

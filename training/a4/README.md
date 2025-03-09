@@ -6,19 +6,23 @@ This directory contains configurations and tools for training large language mod
 
 ## Supported Models
 
-- ✅ Llama3-8B - Ready to use
-- 🚧 Mixtral-8x7B - Work in progress
+- ✅ Llama3-8B FP8 - Ready to use
+- ✅ Mixtral-8x7B FP8 - Ready to use
+- 🚧 Llama-3.1-70B FP8 - Work in progress
+- 🚧 Llama3-8B BF16 - Work in progress
+- 🚧 Mixtral-8x7B BF16 - Work in progress
 
 ## Available Configurations
 
 We provide the following training configurations:
 
-| Model | Data Type | Configuration File |
+| | Model | Data Type | Configuration File |
 |-------|-----------|-------------------|
-| Llama3-8B | BF16 | `recipe/llama3_8b_bf16.yaml` |
-| Llama3-8B | FP8 | `recipe/llama3_8b_fp8.yaml` |
-| Mixtral-8x7B | BF16 | `recipe/mixtral8x7b_bf16.yaml` |
-| Mixtral-8x7B | FP8 | `recipe/mixtral8x7b_fp8.yaml` |
+| | Llama3-8B | BF16 | `recipe/llama3_8b_bf16.yaml` |
+| | Llama3-8B | FP8 | `recipe/llama3_8b_fp8.yaml` |
+| | Llama-3.1-70B | FP8 | `recipe/llama-3.1-70b-fp8.yaml` |
+| | Mixtral-8x7B | BF16 | `recipe/mixtral8x7b_bf16.yaml` |
+| | Mixtral-8x7B | FP8 | `recipe/mixtral8x7b_fp8.yaml` |
 
 ## Usage
 
@@ -59,6 +63,7 @@ Training jobs require access to a GCS bucket for storing and reading data. Follo
 # Choose a configuration (uncomment the one you want to use)
 # export RECIPE_NAME=llama3_8b_bf16
 export RECIPE_NAME=llama3_8b_fp8
+# export RECIPE_NAME=llama-3.1-70b-fp8
 # export RECIPE_NAME=mixtral8x7b_bf16
 # export RECIPE_NAME=mixtral8x7b_fp8
 

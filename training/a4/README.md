@@ -47,20 +47,10 @@ Training jobs require access to a GCS bucket for storing and reading data. Follo
 
 2. Edit the `helm-context/values.yaml` file to configure the GCS bucket mount:
    ```yaml
-   # <GCS_BUCKET>: the name of your Cloud Storage bucket. Do not include the gs:// prefix
+   # <GCS_BUCKET>: the name of your Cloud Storage bucket. Do not include the gs:// prefix, and do not miss ""
    jitGcsMount:
-     bucketName: <GCS_BUCKET>
+     bucketName: "<GCS_BUCKET>"
      mountPath: "/gcs"
-   ```
-
-3. If you don't need to use a GCS bucket, you can comment out this section and modify the `data` section in `selected-configuration.yaml` to use mock data:
-   ```yaml
-   data:
-     data_impl: mock
-     splits_string: 99990,8,2
-     # ...other configuration...
-     index_mapping_dir: null
-     data_prefix: null
    ```
 
 ### 3. Select Training Configuration
@@ -108,8 +98,7 @@ You can customize training parameters by modifying the `selected-configuration.y
 
 ## Directory Structure
 
-- `command.sh` - Main script for running training
+- `command.sh` - Demo script for running training
 - `docker/` - Docker configurations
 - `helm-context/` - Helm chart configurations
 - `recipe/` - Model training configuration files
-- `selected-configuration.yaml` - Currently selected configuration

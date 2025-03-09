@@ -71,7 +71,7 @@ export RECIPE_NAME=llama3_8b_fp8
 # export RECIPE_NAME=mixtral8x7b_fp8
 
 # 复制所选配置
-cp recipe/$RECIPE_NAME.yaml selected-configuration.yaml
+cp recipe/$RECIPE_NAME.yaml helm-context/selected-configuration.yaml
 ```
 
 ### 4. 启动工作负载

@@ -102,3 +102,4 @@ You can customize training parameters by modifying the `selected-configuration.y
 - `docker/` - Docker configurations
 - `helm-context/` - Helm chart configurations
 - `recipe/` - Model training configuration files
+- `results/` - Training log files and performance metrics

@@ -100,3 +100,4 @@ helm uninstall $WORKLOAD_NAME
 - `docker/` - 包含 Docker 配置
 - `helm-context/` - Helm chart 配置
 - `recipe/` - 模型训练配置文件
+- `results/` - 训练日志文件和性能指标

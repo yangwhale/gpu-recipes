@@ -66,7 +66,7 @@ spec:
    spec:
     # serviceAccountName: a3ultra-benchmark-sa
     # serviceAccountName: k8s-sa
-    serviceAccountName: map-a4-gke
+    # serviceAccountName: map-a4-gke
     # schedulingGates:
     # - name: "gke.io/topology-aware-auto-scheduling"
     hostNetwork: true

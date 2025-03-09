@@ -17,7 +17,7 @@ We provide the following training configurations:
 |-------|-----------|-------------------|
 | Llama3-8B | BF16 | `recipe/llama3_8b_bf16.yaml` |
 | Llama3-8B | FP8 | `recipe/llama3_8b_fp8.yaml` |
-| Mixtral-8x7B | BF16 | `recipe/mixtral8x7B_bf16.yaml` |
+| Mixtral-8x7B | BF16 | `recipe/mixtral8x7b_bf16.yaml` |
 | Mixtral-8x7B | FP8 | `recipe/mixtral8x7b_fp8.yaml` |
 
 ## Usage

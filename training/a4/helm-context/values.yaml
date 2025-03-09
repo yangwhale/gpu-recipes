@@ -1,0 +1,82 @@
+# Note: The only choice is 'gke' or custom k8s + debian (else condition)
+targetPlatform: "gke"
+
+# targetNodes:
+# - gke-map-a4-gke-a4-highgpu-8g-a4-highg-8d40f2e9-3s5j
+# When using Kueue
+# queue: "multislice-queue"
+# queue: "a3-ultra"
+
+volumes:
+  # The VM host path for SSDs is assumed at /mnt/stateful_partition/kube-ephemeral-ssd
+  ssdMountPath: "/ssd"
+
+  # This mounts any persistent volume claims present in the cluster:
+  # pvcMounts:
+  # - name: <shared-file-system>
+  #   mountPath: "/nfs"
+
+  # This requires GCS fuse CSI driver properly installed in the GKE cluster:
+  # gcsMounts:
+  # - bucketName: "mhvictorhau" #"gs://mhvictorhau/mixtral8x7b"
+  #   mountPath: "/gcs"
+  
+  # Just-in-Time GCS mounts. This requires 'gcsfuse' binary present in the main container:
+  # Note: For expedience it was only implemented it for a single bucket (not an array). 
+  jitGcsMount:
+    bucketName: "benchmark-artifacts"
+    mountPath: "/gcs"
+
+gcsDownload: # downloads or synchronizes contents of a GCS bucket folder on initialization
+  source: "gs://nemo-megatron-demo/training-data/tokenized/bpe2gpt/wikipedia/" 
+  target: "/ssd/.cache/"
+
+workload:
+  #  image: "us-central1-docker.pkg.dev/supercomputer-testing/sufkha-nemo-demo-test/nemo:24.12-mpi"
+  # image: "us-central1-docker.pkg.dev/supercomputer-testing/sufkha-nemo-demo-test/nemo:02242025-mpi"
+  image: "us-central1-docker.pkg.dev/supercomputer-testing/sufkha-nemo-demo-test/nemo:25.02-rc4-mpi-fp8"
+  torchDistributedTarget: "/opt/NeMo/examples/nlp/language_modeling/megatron_gpt_pretraining.py"
+
+  gpus: 16 # This should be one of: {<= 8,  multiple of 8}
+  arguments:
+  # The argument name will be prefixed with '+' (see https://hydra.cc/docs/advanced/override_grammar/basic/)
+  - name: "exp_manager.explicit_log_dir"
+    value: "/nemo-experiments/results" 
+  - name: "exp_manager.exp_dir"
+    value: "/nemo-experiments/"
+  - name: "model.data.data_prefix"
+    value: "[1.0,/ssd/.cache/wikipedia-tokenized-for-gpt2]"
+  - name: "model.data.index_mapping_dir"
+    value: "/gcs/index_mapping_dir"
+
+  # Enable Nsight profiling, Austin profiling triggers, and Python debug version.
+  # Note: This is NOT fully implemented yet
+  profilingMode: true
+  profilingRanks: "all" # one of {"none", "one", "all"}
+
+  # If not 'null', launches a Tensorboard server on first node. By design, the job will then not exit on first node.
+  # This is primarly intended for debugging purposes, when a shared file-system or external Tensorboard is unavailable.  
+  embeddedTensorboardTarget: null
+
+network:
+  stack: "gib" # one of {"tcp", "tcpx", "tcpxo", "gib"}
+
+  # As of 11/6 for RoCE
+  pluginVersion: "us-docker.pkg.dev/kernel-net-team/clouda4-nccl-dev/nccl-plugin-gib:latest"
+  
+  # As of 10/26 for TCPxo:
+  # daemonVersion: "us-docker.pkg.dev/gce-ai-infra/gpudirect-tcpxo/tcpgpudmarxd-dev:v1.0.12"
+  # pluginVersion: "us-docker.pkg.dev/gce-ai-infra/gpudirect-tcpxo/nccl-plugin-gpudirecttcpx-dev:v1.0.6"
+    
+  ncclSettings:
+  # Note: If you need to debug, using NCCL_DEBUG=INFO and NCCL_DEBUG_SUBSYS=INIT,NET are a good idea. You can look up other options.
+  - name: NCCL_DEBUG
+    value: "VERSION"
+  # - name: NCCL_DEBUG_SUBSYS
+  #   value: "INIT,NET"
+  - name: NCCL_ALGO
+    value: "Ring,Tree"
+
+  # The following NCCL settings are recommended for TCPxo only (but tunable):
+  # - name: NCCL_MIN_NCHANNELS
+  #   value: "4"

@@ -16,13 +16,13 @@ This directory contains configurations and tools for training large language mod
 
 We provide the following training configurations:
 
-| | Model | Data Type | Configuration File |
+| Model | Data Type | Configuration File |
 |-------|-----------|-------------------|
-| | Llama3-8B | BF16 | `recipe/llama3_8b_bf16.yaml` |
-| | Llama3-8B | FP8 | `recipe/llama3_8b_fp8.yaml` |
-| | Llama-3.1-70B | FP8 | `recipe/llama-3.1-70b-fp8.yaml` |
-| | Mixtral-8x7B | BF16 | `recipe/mixtral8x7b_bf16.yaml` |
-| | Mixtral-8x7B | FP8 | `recipe/mixtral8x7b_fp8.yaml` |
+| Llama3-8B | BF16 | `recipe/llama3_8b_bf16.yaml` |
+| Llama3-8B | FP8 | `recipe/llama3_8b_fp8.yaml` |
+| Llama-3.1-70B | FP8 | `recipe/llama-3.1-70b-fp8.yaml` |
+| Mixtral-8x7B | BF16 | `recipe/mixtral8x7b_bf16.yaml` |
+| Mixtral-8x7B | FP8 | `recipe/mixtral8x7b_fp8.yaml` |
 
 ## Usage
 

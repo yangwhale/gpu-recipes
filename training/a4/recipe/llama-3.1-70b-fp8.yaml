@@ -1,5 +1,5 @@
 run:
-  name: llama-3.1-70b-a4-fp8
+  name: llama3-70b-fp8
   time_limit: 0-03:30:00
   dependency: singleton
 trainer:
@@ -10,7 +10,7 @@ trainer:
   enable_checkpointing: false
   use_distributed_sampler: false
   max_epochs: null
-  max_steps: 10
+  max_steps: 15
   max_time: 05:23:30:00
   log_every_n_steps: 1
   val_check_interval: 200
@@ -20,7 +20,7 @@ trainer:
   gradient_clip_val: 1.0
 exp_manager:
   exp_dir: null
-  name: megatron_gpt
+  name: megatron_llama
   resume_if_exists: false
   create_dllogger_logger: true
   dllogger_logger_kwargs:
@@ -44,9 +44,9 @@ exp_manager:
 model:
   mcore_gpt: true
   micro_batch_size: 1
-  global_batch_size: 32
+  global_batch_size: 64
   rampup_batch_size: null
-  tensor_model_parallel_size: 4
+  tensor_model_parallel_size: 8
   pipeline_model_parallel_size: 2
   virtual_pipeline_model_parallel_size: null
   context_parallel_size: 1
@@ -107,10 +107,10 @@ model:
   onnx_safe: false
   apex_transformer_log_level: 30
   gradient_as_bucket_view: true
-  sync_batch_comm: true
-  activations_checkpoint_granularity: selective
-  activations_checkpoint_method: uniform
-  activations_checkpoint_num_layers: 1
+  sync_batch_comm: false
+  activations_checkpoint_granularity: null
+  activations_checkpoint_method: null
+  activations_checkpoint_num_layers: null
   num_micro_batches_with_partial_activation_checkpoints: null
   activations_checkpoint_layers_per_pipeline: null
   sequence_parallel: false
@@ -161,8 +161,8 @@ model:
     data_prefix: []
   nsys_profile:
     enabled: false
-    start_step: 6
-    end_step: 9
+    start_step: 11
+    end_step: 13
     ranks:
     - 0
     - 8

@@ -29,6 +29,7 @@ show_help() {
   echo "  -b, --gcs-bucket BUCKET        Set the GCS bucket name (without gs:// prefix)"
   echo "  -a, --artifact-registry REGISTRY Set the Artifact Registry name"
   echo "  -t, --hf-token TOKEN           Set the Hugging Face API token"
+  echo "  -N, --networks NETWORKS        Set custom network configuration (comma-separated list)"
   echo "  -h, --help                     Display this help and exit"
   echo "  --build-only                   Only build the Docker image"
   echo "  --deploy-only                  Only deploy the model service"
@@ -74,6 +75,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -t|--hf-token)
       HF_TOKEN="$2"
+      shift 2
+      ;;
+    -N|--networks)
+      CUSTOM_NETWORKS="$2"
       shift 2
       ;;
     -h|--help)
@@ -220,22 +225,45 @@ if [[ "$goto_test" == "false" ]]; then
   # Install Helm chart
   echo "Installing Helm chart..."
   cd $RECIPE_ROOT
-  helm install -f values.yaml \
-    --set volumes.gcsMounts[0].bucketName=${GCS_BUCKET} \
-    --set clusterName=$CLUSTER_NAME \
-    --set job.image.repository=${ARTIFACT_REGISTRY}/${SGLANG_IMAGE} \
-    --set job.image.tag=${SGLANG_VERSION} \
-    $USER-serving-deepseek-r1-model \
-    $REPO_ROOT/src/helm-charts/a4/sglang-inference
+  
+  # 检查是否指定了自定义网络配置
+  if [[ -z "$CUSTOM_NETWORKS" ]]; then
+    echo "使用默认网络配置安装..."
+    helm install -f values.yaml \
+      --set volumes.gcsMounts[0].bucketName=${GCS_BUCKET} \
+      --set clusterName=$CLUSTER_NAME \
+      --set job.image.repository=${ARTIFACT_REGISTRY}/${SGLANG_IMAGE} \
+      --set job.image.tag=${SGLANG_VERSION} \
+      $USER-serving-deepseek-r1-model \
+      $REPO_ROOT/src/helm-charts/a4/sglang-inference
+  else
+    echo "使用自定义网络配置安装..."
+    # 假设CUSTOM_NETWORKS格式为"default,gke-a4-high-sub-1,rdma-0,rdma-1,..."
+    IFS=',' read -r -a NETWORK_ARRAY <<< "$CUSTOM_NETWORKS"
+    
+    NETWORK_ARGS=""
+    for i in "${!NETWORK_ARRAY[@]}"; do
+      NETWORK_ARGS="$NETWORK_ARGS --set network.subnetworks[$i]=${NETWORK_ARRAY[$i]}"
+    done
+    
+    helm install -f values.yaml \
+      --set volumes.gcsMounts[0].bucketName=${GCS_BUCKET} \
+      --set clusterName=$CLUSTER_NAME \
+      --set job.image.repository=${ARTIFACT_REGISTRY}/${SGLANG_IMAGE} \
+      --set job.image.tag=${SGLANG_VERSION} \
+      $NETWORK_ARGS \
+      $USER-serving-deepseek-r1-model \
+      $REPO_ROOT/src/helm-charts/a4/sglang-inference
+  fi
   
   echo "Waiting for deployment to start..."
   sleep 10
   
   echo "Checking deployment status..."
-  kubectl get deployment/$USER-serving-deepseek-r1-model
+  kubectl get deployment/$USER-serving-deepseek-r1-model-serving
   
   echo "Viewing logs..."
-  kubectl logs -f job/$USER-serving-deepseek-r1-model &
+  kubectl logs -f deployment/$USER-serving-deepseek-r1-model-serving &
   LOG_PID=$!
   
   # Wait for service to be ready
@@ -255,7 +283,7 @@ if [[ "$goto_test" == "false" ]]; then
     fi
     
     # Check if deployment is ready
-    DEPLOYMENT_STATUS=$(kubectl get deployment/$USER-serving-deepseek-r1-model -o jsonpath='{.status.readyReplicas}' 2>/dev/null || echo "0")
+    DEPLOYMENT_STATUS=$(kubectl get deployment/$USER-serving-deepseek-r1-model-serving -o jsonpath='{.status.readyReplicas}' 2>/dev/null || echo "0")
     if [[ "$DEPLOYMENT_STATUS" != "0" ]]; then
       echo "Service is ready!"
       READY=true

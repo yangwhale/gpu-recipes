@@ -24,16 +24,6 @@ We provide the following training configurations:
 | Mixtral-8x7B | BF16 | `recipe/mixtral8x7b_bf16.yaml` |
 | Mixtral-8x7B | FP8 | `recipe/mixtral8x7b_fp8.yaml` |
 
-## Performance Metrics
-
-Below are the measured performance metrics for supported models on A4 GPUs:
-
-| Model | Data Type | TFLOPs per GPU | Configuration File |
-|-------|-----------|----------------|-------------------|
-| Llama3-8B | FP8 | 1556.08 | `recipe/llama3_8b_fp8.yaml` |
-| Mixtral-8x7B | FP8 | 1235.52 | `recipe/mixtral8x7b_fp8.yaml` |
-| Llama-3.1-70B | FP8 | 1047.52 | `recipe/llama-3.1-70b-fp8.yaml` |
-
 ## Usage
 
 ### 1. Connect to GKE Cluster

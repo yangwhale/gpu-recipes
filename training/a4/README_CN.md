@@ -22,16 +22,6 @@
 | Mixtral-8x7B | BF16 | `recipe/mixtral8x7b_bf16.yaml` |
 | Mixtral-8x7B | FP8 | `recipe/mixtral8x7b_fp8.yaml` |
 
-## 性能指标
-
-以下是支持模型在 A4 GPU 上的性能指标测量结果：
-
-| 模型 | 数据类型 | 每GPU的TFLOPs | 配置文件 |
-|------|---------|--------------|----------|
-| Llama3-8B | FP8 | 1556.08 | `recipe/llama3_8b_fp8.yaml` |
-| Mixtral-8x7B | FP8 | 1235.52 | `recipe/mixtral8x7b_fp8.yaml` |
-| Llama-3.1-70B | FP8 | 1047.52 | `recipe/llama-3.1-70b-fp8.yaml` |
-
 ## 使用方法
 
 ### 1. 连接到 GKE 集群

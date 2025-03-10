@@ -8,7 +8,7 @@ This directory contains configurations and tools for training large language mod
 
 - ✅ Llama3-8B FP8 - Ready to use
 - ✅ Mixtral-8x7B FP8 - Ready to use
-- 🚧 Llama-3.1-70B FP8 - Work in progress
+- ✅ Llama-3.1-70B FP8 - Ready to use
 - 🚧 Llama3-8B BF16 - Work in progress
 - 🚧 Mixtral-8x7B BF16 - Work in progress
 
@@ -23,6 +23,16 @@ We provide the following training configurations:
 | Llama-3.1-70B | FP8 | `recipe/llama-3.1-70b-fp8.yaml` |
 | Mixtral-8x7B | BF16 | `recipe/mixtral8x7b_bf16.yaml` |
 | Mixtral-8x7B | FP8 | `recipe/mixtral8x7b_fp8.yaml` |
+
+## Performance Metrics
+
+Below are the measured performance metrics for supported models on A4 GPUs:
+
+| Model | Data Type | TFLOPs per GPU | Configuration File |
+|-------|-----------|----------------|-------------------|
+| Llama3-8B | FP8 | 1556.08 | `recipe/llama3_8b_fp8.yaml` |
+| Mixtral-8x7B | FP8 | 1235.52 | `recipe/mixtral8x7b_fp8.yaml` |
+| Llama-3.1-70B | FP8 | 1047.52 | `recipe/llama-3.1-70b-fp8.yaml` |
 
 ## Usage
 

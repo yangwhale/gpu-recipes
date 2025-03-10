@@ -9,7 +9,7 @@ This directory contains configurations and tools for training large language mod
 - ✅ Llama3-8B FP8 - Ready to use
 - ✅ Mixtral-8x7B FP8 - Ready to use
 - ✅ Llama-3.1-70B FP8 - Ready to use
-- 🚧 Llama3-8B BF16 - Work in progress
+- ✅ Llama3-8B BF16 - Ready to use
 - 🚧 Mixtral-8x7B BF16 - Work in progress
 
 ## Available Configurations

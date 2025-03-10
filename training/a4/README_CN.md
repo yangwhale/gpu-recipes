@@ -7,7 +7,7 @@
 - ✅ Llama3-8B FP8 - 已准备就绪
 - ✅ Mixtral-8x7B FP8 - 已准备就绪
 - ✅ Llama-3.1-70B FP8 - 已准备就绪
-- 🚧 Llama3-8B BF16 - 开发中
+- ✅ Llama3-8B BF16 - 已准备就绪
 - 🚧 Mixtral-8x7B BF16 - 开发中
 
 ## 可用配置

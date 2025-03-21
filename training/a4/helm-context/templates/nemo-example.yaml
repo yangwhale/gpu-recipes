@@ -48,21 +48,21 @@ spec:
       gke-gcsfuse/volumes: "true"
       {{- end}}
       kueue.x-k8s.io/podset-preferred-topology: "kubernetes.io/hostname"
-#      networking.gke.io/default-interface: 'eth0'
-#      networking.gke.io/interfaces: |
-#        [
-#          {"interfaceName":"eth0","network":"default"},
-#          {"interfaceName":"eth1","network":"a3ultra-benchmark-sub-1"},
-#          {"interfaceName":"eth2","network":"a3ultra-benchmark-rdma-sub-0"},
-#          {"interfaceName":"eth3","network":"a3ultra-benchmark-rdma-sub-1"},
-#          {"interfaceName":"eth4","network":"a3ultra-benchmark-rdma-sub-2"},
-#          {"interfaceName":"eth5","network":"a3ultra-benchmark-rdma-sub-3"},
-#          {"interfaceName":"eth6","network":"a3ultra-benchmark-rdma-sub-4"},
-#          {"interfaceName":"eth7","network":"a3ultra-benchmark-rdma-sub-5"},
-#          {"interfaceName":"eth8","network":"a3ultra-benchmark-rdma-sub-6"},
-#          {"interfaceName":"eth9","network":"a3ultra-benchmark-rdma-sub-7"}
-#        ] 
-#
+      networking.gke.io/default-interface: 'eth0'
+      networking.gke.io/interfaces: |
+        [
+          {"interfaceName":"eth0","network":"default"},
+          {"interfaceName":"eth1","network":"gvnic-1"},
+          {"interfaceName":"eth2","network":"rdma-0"},
+          {"interfaceName":"eth3","network":"rdma-1"},
+          {"interfaceName":"eth4","network":"rdma-2"},
+          {"interfaceName":"eth5","network":"rdma-3"},
+          {"interfaceName":"eth6","network":"rdma-4"},
+          {"interfaceName":"eth7","network":"rdma-5"},
+          {"interfaceName":"eth8","network":"rdma-6"},
+          {"interfaceName":"eth9","network":"rdma-7"}
+        ] 
+
    spec:
     # serviceAccountName: a3ultra-benchmark-sa
     # serviceAccountName: k8s-sa

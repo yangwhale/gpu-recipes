@@ -1,5 +1,5 @@
 run:
-  name: llama-3.1-70b-fp8
+  name: llama3-70b-256gpus-fp8
   time_limit: 0-03:30:00
   dependency: singleton
 trainer:
@@ -10,7 +10,7 @@ trainer:
   enable_checkpointing: false
   use_distributed_sampler: false
   max_epochs: null
-  max_steps: 30
+  max_steps: 15
   max_time: 05:23:30:00
   log_every_n_steps: 1
   val_check_interval: 200
@@ -20,7 +20,7 @@ trainer:
   gradient_clip_val: 1.0
 exp_manager:
   exp_dir: null
-  name: megatron_gpt
+  name: megatron_llama
   resume_if_exists: false
   create_dllogger_logger: true
   dllogger_logger_kwargs:
@@ -159,8 +159,8 @@ model:
     data_prefix: []
   nsys_profile:
     enabled: false
-    start_step: 17
-    end_step: 19
+    start_step: 11
+    end_step: 13
     ranks:
     - 0
     - 8

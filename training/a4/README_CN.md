@@ -13,6 +13,8 @@
 - 🚧 Mixtral-8x7B BF16 - 开发中
 - ✅ Llama-3.1-70B 256 GPUs FP8 - 已准备就绪
 - ✅ Llama-3.1-70B 256 GPUs BF16 - 已准备就绪
+- ✅ Mixtral-8x7B 256 GPUs FP8 - 已准备就绪
+- ✅ Mixtral-8x7B 256 GPUs BF16 - 已准备就绪
 ## 可用配置
 
 我们提供了以下训练配置：
@@ -26,7 +28,8 @@
 | Llama-3.1-70B (256 GPUs) | BF16 | `recipe/llama-3.1-70b-256gpus-bf16.yaml` |
 | Mixtral-8x7B | BF16 | `recipe/mixtral8x7b_bf16.yaml` |
 | Mixtral-8x7B | FP8 | `recipe/mixtral8x7b_fp8.yaml` |
-| Mixtral-8x7B | FP8 | `recipe/mixtral8x7b_fp8.yaml` |
+| Mixtral-8x7B (256 GPUs) | BF16 | `recipe/mixtral8x7b-256gpus-bf16.yaml` |
+| Mixtral-8x7B (256 GPUs) | FP8 | `recipe/mixtral8x7b-256gpus-fp8.yaml` |
 
 ## 使用方法
 
@@ -72,6 +75,8 @@ export RECIPE_NAME=llama-3.1-70b-256gpus-fp8
 # export RECIPE_NAME=llama-3.1-70b-256gpus-bf16
 # export RECIPE_NAME=mixtral8x7b_bf16
 # export RECIPE_NAME=mixtral8x7b_fp8
+# export RECIPE_NAME=mixtral8x7b-256gpus-bf16
+# export RECIPE_NAME=mixtral8x7b-256gpus-fp8
 
 # 复制所选配置
 cp recipe/$RECIPE_NAME.yaml helm-context/selected-configuration.yaml

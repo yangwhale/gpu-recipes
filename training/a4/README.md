@@ -13,6 +13,8 @@ This directory contains configurations and tools for training large language mod
 - 🚧 Mixtral-8x7B BF16 - Work in progress
 - ✅ Llama-3.1-70B 256 GPUs FP8 - Ready to use
 - ✅ Llama-3.1-70B 256 GPUs BF16 - Ready to use
+- ✅ Mixtral-8x7B  256 GPUs FP8 - Ready to use
+- ✅ Mixtral-8x7B  256 GPUs BF16 - Ready to use
 
 ## Available Configurations
 
@@ -23,10 +25,12 @@ We provide the following training configurations:
 | Llama3-8B | BF16 | `recipe/llama3_8b_bf16.yaml` |
 | Llama3-8B | FP8 | `recipe/llama3_8b_fp8.yaml` |
 | Llama-3.1-70B | FP8 | `recipe/llama-3.1-70b-fp8.yaml` |
-| Llama-3.1-70B (256 GPUs) | FP8 | `recipe/llama-3.1-70b-256gpus-fp8.yaml` |
-| Llama-3.1-70B (256 GPUs) | BF16 | `recipe/llama-3.1-70b-256gpus-bf16.yaml` |
 | Mixtral-8x7B | BF16 | `recipe/mixtral8x7b_bf16.yaml` |
 | Mixtral-8x7B | FP8 | `recipe/mixtral8x7b_fp8.yaml` |
+| Llama-3.1-70B (256 GPUs) | FP8 | `recipe/llama-3.1-70b-256gpus-fp8.yaml` |
+| Llama-3.1-70B (256 GPUs) | BF16 | `recipe/llama-3.1-70b-256gpus-bf16.yaml` |
+| Mixtral-8x7B (256 GPUs) | BF16 | `recipe/mixtral8x7b-256gpus-bf16.yaml` |
+| Mixtral-8x7B (256 GPUs) | FP8 | `recipe/mixtral8x7b-256gpus-fp8.yaml` |
 
 ## Usage
 
@@ -72,6 +76,8 @@ export RECIPE_NAME=llama-3.1-70b-256gpus-fp8
 # export RECIPE_NAME=llama-3.1-70b-256gpus-bf16
 # export RECIPE_NAME=mixtral8x7b_bf16
 # export RECIPE_NAME=mixtral8x7b_fp8
+# export RECIPE_NAME=mixtral8x7b-256gpus-bf16
+# export RECIPE_NAME=mixtral8x7b-256gpus-fp8
 
 # Copy the selected configuration
 cp recipe/$RECIPE_NAME.yaml helm-context/selected-configuration.yaml

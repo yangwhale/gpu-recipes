@@ -12,7 +12,7 @@
 - ✅ Llama3-8B BF16 - 已准备就绪
 - 🚧 Mixtral-8x7B BF16 - 开发中
 - ✅ Llama-3.1-70B 256 GPUs FP8 - 已准备就绪
-
+- ✅ Llama-3.1-70B 256 GPUs BF16 - 已准备就绪
 ## 可用配置
 
 我们提供了以下训练配置：
@@ -23,7 +23,9 @@
 | Llama3-8B | FP8 | `recipe/llama3_8b_fp8.yaml` |
 | Llama-3.1-70B | FP8 | `recipe/llama-3.1-70b-fp8.yaml` |
 | Llama-3.1-70B (256 GPUs) | FP8 | `recipe/llama-3.1-70b-256gpus-fp8.yaml` |
+| Llama-3.1-70B (256 GPUs) | BF16 | `recipe/llama-3.1-70b-256gpus-bf16.yaml` |
 | Mixtral-8x7B | BF16 | `recipe/mixtral8x7b_bf16.yaml` |
+| Mixtral-8x7B | FP8 | `recipe/mixtral8x7b_fp8.yaml` |
 | Mixtral-8x7B | FP8 | `recipe/mixtral8x7b_fp8.yaml` |
 
 ## 使用方法
@@ -67,6 +69,7 @@ gcloud container clusters get-credentials $CLUSTER_NAME --region $REGION
 # export RECIPE_NAME=llama3_8b_fp8
 # export RECIPE_NAME=llama-3.1-70b-fp8
 export RECIPE_NAME=llama-3.1-70b-256gpus-fp8
+# export RECIPE_NAME=llama-3.1-70b-256gpus-bf16
 # export RECIPE_NAME=mixtral8x7b_bf16
 # export RECIPE_NAME=mixtral8x7b_fp8
 

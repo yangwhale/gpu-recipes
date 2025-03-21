@@ -64,9 +64,9 @@ Training jobs require access to a GCS bucket for storing and reading data. Follo
 ```bash
 # Choose a configuration (uncomment the one you want to use)
 # export RECIPE_NAME=llama3_8b_bf16
-export RECIPE_NAME=llama3_8b_fp8
+# export RECIPE_NAME=llama3_8b_fp8
 # export RECIPE_NAME=llama-3.1-70b-fp8
-# export RECIPE_NAME=llama-3.1-70b-256gpus-fp8
+export RECIPE_NAME=llama-3.1-70b-256gpus-fp8
 # export RECIPE_NAME=mixtral8x7b_bf16
 # export RECIPE_NAME=mixtral8x7b_fp8
 

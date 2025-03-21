@@ -64,9 +64,9 @@ gcloud container clusters get-credentials $CLUSTER_NAME --region $REGION
 ```bash
 # 选择一个配置（取消注释您想使用的配置）
 # export RECIPE_NAME=llama3_8b_bf16
-export RECIPE_NAME=llama3_8b_fp8
+# export RECIPE_NAME=llama3_8b_fp8
 # export RECIPE_NAME=llama-3.1-70b-fp8
-# export RECIPE_NAME=llama-3.1-70b-256gpus-fp8
+export RECIPE_NAME=llama-3.1-70b-256gpus-fp8
 # export RECIPE_NAME=mixtral8x7b_bf16
 # export RECIPE_NAME=mixtral8x7b_fp8
 

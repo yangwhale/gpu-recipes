@@ -11,7 +11,7 @@ This directory contains configurations and tools for training large language mod
 - ✅ Llama-3.1-70B FP8 - Ready to use
 - ✅ Llama3-8B BF16 - Ready to use
 - 🚧 Mixtral-8x7B BF16 - Work in progress
-- 🚧 Llama-3.1-70B 256 GPUs FP8 - Work in progress
+- ✅ Llama-3.1-70B 256 GPUs FP8 - Ready to use
 
 ## Available Configurations
 
@@ -78,7 +78,8 @@ cp recipe/$RECIPE_NAME.yaml helm-context/selected-configuration.yaml
 
 ```bash
 RECIPE_NAME_UPDATE=${RECIPE_NAME//_/-}
-export WORKLOAD_NAME=$USER-$RECIPE_NAME_UPDATE-16gpu
+RECIPE_NAME_UPDATE=${RECIPE_NAME_UPDATE//./-}
+export WORKLOAD_NAME=$USER-$RECIPE_NAME_UPDATE
 helm install $WORKLOAD_NAME helm-context/
 ```
 

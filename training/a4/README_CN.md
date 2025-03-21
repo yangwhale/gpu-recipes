@@ -2,6 +2,8 @@
 
 本目录包含在 Google A4 GPU 上训练大型语言模型的配置和工具。
 
+[English Document](./README.md)
+
 ## 支持的模型
 
 - ✅ Llama3-8B FP8 - 已准备就绪
@@ -9,7 +11,7 @@
 - ✅ Llama-3.1-70B FP8 - 已准备就绪
 - ✅ Llama3-8B BF16 - 已准备就绪
 - 🚧 Mixtral-8x7B BF16 - 开发中
-- 🚧 Llama-3.1-70B 256 GPUs FP8 - 开发中
+- ✅ Llama-3.1-70B 256 GPUs FP8 - 已准备就绪
 
 ## 可用配置
 
@@ -64,6 +66,7 @@ gcloud container clusters get-credentials $CLUSTER_NAME --region $REGION
 # export RECIPE_NAME=llama3_8b_bf16
 export RECIPE_NAME=llama3_8b_fp8
 # export RECIPE_NAME=llama-3.1-70b-fp8
+# export RECIPE_NAME=llama-3.1-70b-256gpus-fp8
 # export RECIPE_NAME=mixtral8x7b_bf16
 # export RECIPE_NAME=mixtral8x7b_fp8
 
@@ -75,6 +78,7 @@ cp recipe/$RECIPE_NAME.yaml helm-context/selected-configuration.yaml
 
 ```bash
 RECIPE_NAME_UPDATE=${RECIPE_NAME//_/-}
+RECIPE_NAME_UPDATE=${RECIPE_NAME_UPDATE//./-}
 export WORKLOAD_NAME=$USER-$RECIPE_NAME_UPDATE-16gpu
 helm install $WORKLOAD_NAME helm-context/
 ```

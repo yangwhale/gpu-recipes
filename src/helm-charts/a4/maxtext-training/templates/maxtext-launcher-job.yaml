@@ -97,17 +97,9 @@ spec:
       - operator: "Exists"
         key: cloud.google.com/impending-node-termination
       volumes:
-      {{if not $root.Values.network.gibVersion }}
-      - name: library-dir-host
-        hostPath:
-          path: /home/kubernetes/bin/nvidia
-      {{ end }}
       - name: gib
       {{ if $root.Values.network.gibVersion }}
         emptyDir: {}
-      {{ else }}
-        hostPath:
-          path: /home/kubernetes/bin/gib
       {{ end }}
       - name: workload-configuration
         configMap:
@@ -241,8 +233,6 @@ spec:
         - name: LD_LIBRARY_PATH
           {{ if $root.Values.network.gibVersion }}
           value: /usr/local/gib/lib64
-          {{ else }}
-          value: /usr/local/nvidia/lib64
           {{ end }}
 
         # XLA Flags
@@ -266,15 +256,15 @@ spec:
           echo "Pod is assigned job index of $JOB_COMPLETION_INDEX"
           echo "Job ID is $JOB_IDENTIFIER"
 
-          echo "Running nvidia-smi"
-          nvidia-smi
-
-          ldconfig $LD_LIBRARY_PATH
+          # ldconfig $LD_LIBRARY_PATH
+          ldconfig /usr/local/nvidia/lib64/
           echo "Added ${LD_LIBRARY_PATH} to ldconfig:"
           ldconfig -p | grep libcuda | sed 's/^/  /'
 
           echo "Contents of ${LD_LIBRARY_PATH}:"
           ls ${LD_LIBRARY_PATH} | sed 's/^/  /'
+
+          LD_LIBRARY_PATH=/usr/local/cuda-12.6/compat:$LD_LIBRARY_PATH
 
           touch $SSD_MOUNT_PATH/hello-from-$HOSTNAME.txt
           echo "Local SSD contents (path $SSD_MOUNT_PATH):"; ls $SSD_MOUNT_PATH | sed 's/^/  /'
@@ -282,6 +272,10 @@ spec:
           echo "Setting NCCL environment variables"
           cat /usr/local/gib/scripts/set_nccl_env.sh
           source /usr/local/gib/scripts/set_nccl_env.sh
+
+          # Overriding NCCL_SOCKET_IFNAME definition
+          export NCCL_SOCKET_IFNAME="eth0,eth1" 
+          export NCCL_TUNER_CONFIG_PATH=/usr/local/gib/configs/tuner_config_a4.txtpb
 
           echo "MaxText configuration file:"
           cat /etc/workload-configuration/maxtext-configuration.yaml | sed 's/^/| /'
@@ -314,6 +308,8 @@ spec:
           echo ${OPTIONS[@]}
           echo "================================="
 
+          export
+          
           python MaxText/train.py MaxText/configs/base.yml "${OPTIONS[@]}" \
           base_output_directory=gs://${GCS_BUCKET}/maxtext \
           run_name=${JOB_IDENTIFIER} \
@@ -322,12 +318,14 @@ spec:
           echo "Pod on $(hostname --fqdn) is exiting"
 
         volumeMounts:
-          {{ if not $root.Values.network.gibVersion }}
-          - name: library-dir-host
-            mountPath: /usr/local/nvidia
-          {{ end }}
+          # {{ if not $root.Values.network.gibVersion }}
+          # - name: library-dir-host
+          #   mountPath: /usr/local/nvidia
+          # {{ end }}
+          {{ if $root.Values.network.gibVersion }}
           - name: gib
             mountPath: /usr/local/gib
+          {{ end }}
           - name: workload-configuration
             mountPath: /etc/workload-configuration
           - name: shared-memory

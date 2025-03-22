@@ -1,6 +1,6 @@
-# Pretrain Mixtral-8x7B workloads on A3 Ultra GKE Node pools
+# Pretrain Llama-3.1-70B workloads on A3 Ultra GKE Node pools
 
-This recipe outlines the steps for running a Mixtral 8x7B pretraining workload on
+This recipe outlines the steps for running a Llama-3.1-70B pretraining workload on
 [A3 Ultra GKE Node pools](https://cloud.google.com/kubernetes-engine) by using the
 [NVIDIA NeMo framework](https://github.com/NVIDIA/nemo).
 
@@ -20,10 +20,10 @@ For this recipe, the following setup is used:
 
 This recipe has been optimized for and tested with the following configuration:
 
-- A cluster with 32 or 64 [a3-ultragpu-8g](https://cloud.google.com/compute/docs/accelerator-optimized-machines#a3-ultra-vms) machines
+- A cluster with 32 [a3-ultragpu-8g](https://cloud.google.com/compute/docs/accelerator-optimized-machines#a3-ultra-vms) machines
 - Machine placement in the cluster is configured using a [compact placement policy](https://cloud.google.com/kubernetes-engine/docs/how-to/compact-placement)
 - [NVIDIA NeMo NGC container image](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nemo/tags): 24.07
-- BF16 precision training
+- FP8 precision training
 - Uses a mock pretraining dataset provided by the NeMo framework. By default, the job
   is configured to execute 30 training steps. If you want to change the number of training steps,
   see [Configure and submit a pretraining job](#configure-and-submit-a-pretraining-job).
@@ -33,7 +33,7 @@ This recipe has been optimized for and tested with the following configuration:
 Before running this recipe, ensure your environment is configured as follows:
 
 - A GKE cluster with the following setup:
-    - An A3 Ultra node pool (32 nodes - 256 GPUs or 64 nodes - 512 GPUs)
+    - An A3 Ultra node pool (32 nodes, 256 GPUs)
     - Topology-aware scheduling enabled
 - A Google Cloud Storage (GCS) bucket to store results.
   *Important: This bucket must be in the same region as the GKE cluster*.
@@ -93,7 +93,7 @@ From your client, clone the `gpu-recipes` repository and set a reference to the 
 git clone https://github.com/ai-hypercomputer/gpu-recipes.git
 cd gpu-recipes
 export REPO_ROOT=`git rev-parse --show-toplevel`
-export RECIPE_ROOT=$REPO_ROOT/training/a3ultra/mixtral-8x7b/nemo-pretraining-gke
+export RECIPE_ROOT=$REPO_ROOT/training/a3ultra/llama3-1-70b/nemo-pretraining-gke
 ```
 
 ### Get cluster credentials
@@ -112,70 +112,49 @@ This image is based on NVIDIA NeMo 24.07 and contains the NCCL gIB plugin v1.0.3
 
 ### Configure and submit a pretraining job
 
-#### Using 32 nodes (256 GPUs)
-
-The default job setting is 30 training steps and bf16 precision. To execute the job with the
+The default job setting is 30 training steps and fp8 precision. To execute the job with the
 default settings, run the following command from your client:
 
 ```bash
 cd $RECIPE_ROOT
 helm  install -f values.yaml \
-    --set-file nemo_config=$REPO_ROOT/src/frameworks/a3ultra/nemo-configs/mixtral-8x7b-256gpus-a3u-bf16.yaml \
+    --set-file nemo_config=$REPO_ROOT/src/frameworks/a3ultra/nemo-configs/llama3-1-70b-256gpus-a3ultra-fp8.yaml \
     --set workload.image=us-central1-docker.pkg.dev/deeplearning-images/reproducibility/pytorch-gpu-nemo-nccl:nemo24.07-gib1.0.3-A3U \
     --set queue=${KUEUE_NAME} \
     --set volumes.gcsMounts[0].bucketName=${GCS_BUCKET} \
-    $USER-mixtral-8x7b-nemo \
-    $REPO_ROOT/src/helm-charts/a3ultra/nemo-training
-```
-
-#### Using 64 nodes (512 GPUs)
-
-The default job setting is 30 training steps and bf16 precision. To execute the job with the
-default settings, run the following command from your client:
-
-```bash
-cd $RECIPE_ROOT
-helm  install -f values.yaml \
-    --set-file nemo_config=$REPO_ROOT/src/frameworks/a3ultra/nemo-configs/mixtral-8x7b-256gpus-a3u-bf16.yaml \
-    --set workload.image=us-central1-docker.pkg.dev/deeplearning-images/reproducibility/pytorch-gpu-nemo-nccl:nemo24.07-gib1.0.3-A3U \
-    --set queue=${KUEUE_NAME} \
-    --set workload.gpus=512 \
-    --set volumes.gcsMounts[0].bucketName=${GCS_BUCKET} \
-    $USER-mixtral-8x7b-nemo-512 \
+    $USER-llama-3-1-70b-nemo-fp8 \
     $REPO_ROOT/src/helm-charts/a3ultra/nemo-training
 ```
 
 #### Configure job settings
 
 You can overwrite any of the default
-[NeMo configurations](../../../../src/frameworks/a3ultra/nemo-configs/mixtral-8x7b-256gpus-a3u-bf16.yaml)
+[NeMo configurations](../../../../src/frameworks/a3ultra/nemo-configs/llama3-1-70b-256gpus-a3ultra-fp8.yaml)
 for this job. To do this, we can set the new arguments using `--set workload.arguments`.
 
 **Examples**
 
--   To set the number of training steps to 100, run the following command from
-    your client:
+- To set the number of training steps to 100, run the following command from your client:
 
-    ```bash
-    cd $RECIPE_ROOT
-    helm install -f values.yaml \
-        --set-file nemo_config=$REPO_ROOT/src/frameworks/a3ultra/nemo-configs/mixtral-8x7b-256gpus-a3u-bf16.yaml \
-        --set workload.image=us-central1-docker.pkg.dev/deeplearning-images/reproducibility/pytorch-gpu-nemo-nccl:nemo24.07-gib1.0.3-A3U \
-        --set queue=${KUEUE_NAME} \
-        --set volumes.gcsMounts[0].bucketName=${GCS_BUCKET} \
-        --set workload.arguments="{trainer.max_steps=100}" \
-        $USER-mixtral-8x7b-nemo \
-        $REPO_ROOT/src/helm-charts/a3ultra/nemo-training
-    ```
+  ```bash
+  cd $RECIPE_ROOT
+  helm install -f values.yaml \
+      --set-file nemo_config=$REPO_ROOT/src/frameworks/a3ultra/nemo-configs/llama3-1-70b-256gpus-a3ultra-fp8.yaml \
+      --set workload.image=us-central1-docker.pkg.dev/deeplearning-images/reproducibility/pytorch-gpu-nemo-nccl:nemo24.07-gib1.0.3-A3U \
+      --set volumes.gcsMounts[0].bucketName=${GCS_BUCKET} \
+      --set queue=${KUEUE_NAME} \
+      --set workload.arguments="{trainer.max_steps=100}" \
+      $USER-llama-3-1-70b-nemo-fp8 \
+      $REPO_ROOT/src/helm-charts/a3ultra/nemo-training
+  ```
+
 
 ### Monitor the job
 
 To check the status of pods in the indexed job, run the following command from your client:
 
 ```
-kubectl get pods | grep $USER-mixtral-8x7b-nemo
-kubectl get pods | grep $USER-mixtral-8x7b-nemo-512
-
+kubectl get pods | grep $USER-llama-3-1-70b-nemo-fp8
 ```
 
 To get the logs for one of the pods, run the following command from your client:
@@ -202,7 +181,7 @@ gs://${GCS_BUCKET}/nemo-experiments/megatron_gpt/<JOB_ID>
 ```
 
 - `hparams.yaml`: the NeMo configuration used by the pretraining script. This includes
-   the combined [configuration file](../../../../src/frameworks/a3ultra/nemo-configs/mixtral-8x7b-256gpus-a3u-bf16.yaml)
+   the combined [configuration file](../../../../src/frameworks/a3ultra/nemo-configs/llama3-1-70b-256gpus-a3ultra-fp8.yaml)
    and the command line overrides
 - `lightning_logs.txt`: the log files generated by PyTorch Lightning, which is used by NeMo
 - `nemo_error_logs.txt`: the warning and error logs generated by NeMo
@@ -214,22 +193,24 @@ gs://${GCS_BUCKET}/nemo-experiments/megatron_gpt/<JOB_ID>
 Here is an example of an entry in the DLLogger log:
 
 ```json
-DLLL {
-  "timestamp": "1733239212.681539",
-  "datetime": "2024-12-03 15:20:12.681539",
-  "elapsedtime": "171.829225",
+DLLL{
+  "timestamp": "1734117227.896116",
+  "datetime": "2024-12-13 19:13:47.896116",
+  "elapsedtime": "489.15554",
   "type": "LOG",
-  "step": 26,
+  "step": 15,
   "data": {
-    "reduced_train_loss": 6.339119911193848,
-    "lr": 0.0000040880504457163624,
-    "global_step": 26,
-    "consumed_samples": 27648,
-    "train_backward_timing in s": 0.000040674211049918085,
-    "train_step_timing in s": 2.7396187782287598,
+    "reduced_train_loss": 1.865377426147461,
+    "lr": 1.1250000397922122e-06,
+    "global_step": 15.0,
+    "consumed_samples": 16384.0,
+    "train_backward_timing in s": 4.5490265620173886e-05,
+    "grad_norm": 19.41560935974121,
+    "train_step_timing in s": 20.021318435668945,
     "epoch": 0
-  }
+    }
 }
+
 ```
 
 The DLLogger log can be used to calculate the Model FLOPS Utilization (MFU) metric,
@@ -258,7 +239,7 @@ following steps command from your client:
 
     ```bash
     gcloud storage cp gs://${GCS_BUCKET}/nemo-experiments/megatron_gpt/<JOB_ID>/dllogger/rank-0/dllogger.json \
-        /path/to/your/local/dllogger.json
+        $RECIPE_ROOT/dllogger.json
     ```
 
 2. Run the
@@ -270,13 +251,13 @@ following steps command from your client:
    python3 process_training_results.py --file $RECIPE_ROOT/dllogger.json \
    --batch_size 1024 \
    --num_accelerators 256 \
-   --precision bf16 \
-   --model_type mixtral-7b \
+   --precision fp8 \
+   --model_type llama3.1-70b \
    --accelerator_type h200
    ```
 
 **Note:** The `batch_size`, `num_accelerators`, `precision`, `model_type` and `accelerator_type` are the
-specific values for this recipe running the default configuration with 32 nodes. Average step time
+specific values for this recipe running the default configuration. Average step time
 is computed by default using the steps 10 to 30.
 
 For more detailed information and advanced usage instructions of this tool,
@@ -288,8 +269,7 @@ You can delete the job and other resources created by the Helm chart.
 To uninstall Helm, run the following command from your client:
 
 ```bash
-helm uninstall $USER-mixtral-8x7b-nemo
-helm uninstall $USER-mixtral-8x7b-nemo-512
+helm uninstall $USER-llama-3-1-70b-nemo-fp8
 ```
 
 ### Running the recipe on a cluster that does not use the default configuration.
@@ -306,7 +286,7 @@ To configure the correct networking annotations for a cluster that uses non-defa
 ```bash
 cd $RECIPE_ROOT
 helm  install -f values.yaml \
-    --set-file nemo_config=$REPO_ROOT/src/frameworks/a3ultra/nemo-configs/mixtral-8x7b-256gpus-a3u-bf16.yaml \
+    --set-file nemo_config=$REPO_ROOT/src/frameworks/a3ultra/nemo-configs/llama3-1-70b-256gpus-a3ultra-fp8.yaml \
     --set workload.image=us-central1-docker.pkg.dev/deeplearning-images/reproducibility/pytorch-gpu-nemo-nccl:nemo24.07-gib1.0.3-A3U \
     --set volumes.gcsMounts[0].bucketName=${GCS_BUCKET} \
     --set queue=${KUEUE_NAME} \
@@ -320,6 +300,6 @@ helm  install -f values.yaml \
     --set network.subnetworks[7]=rdma-5 \
     --set network.subnetworks[8]=rdma-6 \
     --set network.subnetworks[9]=rdma-7 \
-    $USER-mixtral-8x7b-nemo \
+    $USER-llama-3-1-70b-nemo-fp8 \
     $REPO_ROOT/src/helm-charts/a3ultra/nemo-training
 ```

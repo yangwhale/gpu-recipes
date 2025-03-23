@@ -157,7 +157,7 @@ The recipe uses the helm chart to run the above steps.
     ```bash
     cd $RECIPE_ROOT
     helm install -f values.yaml \
-    --set volumes.gcsMounts[0].bucketName=${GCS_BUCKET} \
+    --set "volumes.gcsMounts[0].bucketName"=${GCS_BUCKET} \
     --set job.image.repository=${ARTIFACT_REGISTRY}/${VLLM_IMAGE} \
     --set job.image.tag=${VLLM_VERSION} \
     $USER-serving-deepseek-r1-model \

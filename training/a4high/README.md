@@ -36,8 +36,8 @@ We provide the following training configurations:
 | Llama-3.1-70B (256 GPUs) | BF16 | `recipe/llama-3.1-70b-256gpus-bf16.yaml` |
 | Mixtral-8x7B (16 GPUs) | FP8 | `recipe/mixtral8x7b-16gpus-fp8.yaml` |
 | Mixtral-8x7B (16 GPUs) | BF16 | `recipe/mixtral8x7b-16gpus-bf16.yaml` |
-| Mixtral-8x7B (256 GPUs) | BF16 | `recipe/mixtral8x7b-256gpus-bf16.yaml` |
 | Mixtral-8x7B (256 GPUs) | FP8 | `recipe/mixtral8x7b-256gpus-fp8.yaml` |
+| Mixtral-8x7B (256 GPUs) | BF16 | `recipe/mixtral8x7b-256gpus-bf16.yaml` |
 
 ## Usage
 

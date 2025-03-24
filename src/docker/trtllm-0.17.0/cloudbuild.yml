@@ -16,10 +16,10 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args:
   - 'build'
-  - '--tag=${_ARTIFACT_REGISTRY}/${_TRT_LLM_IMAGE}:${_TRT_LLM_VERSION}'
+  - '--tag=${_ARTIFACT_REGISTRY}/${_TRTLLM_IMAGE}:${_TRTLLM_VERSION}'
   - '--file=trtllm.Dockerfile'
   - '.'
   automapSubstitutions: true
 
 images:
-- '${_ARTIFACT_REGISTRY}/${_TRT_LLM_IMAGE}:${_TRT_LLM_VERSION}'
+- '${_ARTIFACT_REGISTRY}/${_TRTLLM_IMAGE}:${_TRTLLM_VERSION}'

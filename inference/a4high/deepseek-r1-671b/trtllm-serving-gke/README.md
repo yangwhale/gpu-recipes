@@ -1,5 +1,7 @@
 # Single Node Inference Benchmark of DeepSeek R1 671B with TensorRT-LLM on A4 High GKE Node Pool
 
+English | [简体中文](README_CN.md)
+
 This recipe outlines the steps to benchmark the inference of a DeepSeek R1 671B model using [TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM) on an [A4 High GKE Node pool](https://cloud.google.com/kubernetes-engine) with a single node.
 
 ## Orchestration and Deployment Tools

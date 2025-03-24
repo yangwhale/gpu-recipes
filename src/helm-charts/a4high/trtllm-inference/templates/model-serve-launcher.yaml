@@ -21,18 +21,18 @@ apiVersion: apps/v1
 kind: Deployment
 
 metadata:
-  name: {{ .Release.Name }}-serving
+  name: {{ .Release.Name }}
   labels:
-    app: {{ .Release.Name }}-serving
+    app: {{ .Release.Name }}
 spec:
   replicas: {{ $nodes }}
   selector:
     matchLabels:
-      app: {{ .Release.Name }}-serving
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}-serving
+        app: {{ .Release.Name }}
       annotations:
         kubectl.kubernetes.io/default-container: serving
 

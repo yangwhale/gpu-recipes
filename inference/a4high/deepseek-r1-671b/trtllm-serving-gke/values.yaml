@@ -48,3 +48,12 @@ trtllm:
     type: ClusterIP
     ports:
       http: 8000
+
+benchmarks:
+  experiments:
+    - isl: 512
+      osl: 128
+      num_requests: 100
+    - isl: 1024
+      osl: 256
+      num_requests: 50

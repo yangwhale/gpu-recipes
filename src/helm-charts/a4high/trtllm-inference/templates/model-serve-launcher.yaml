@@ -89,6 +89,10 @@ spec:
         - name: local-ssd
           hostPath:
             path: /mnt/stateful_partition/kube-ephemeral-ssd
+        - name: benchmark-script
+          configMap:
+            name: {{ .Release.Name }}-benchmark-script
+            defaultMode: 0777
         {{- range $gcs := .Values.volumes.gcsMounts }}
         - name: "{{ $gcs.bucketName }}"
           csi:

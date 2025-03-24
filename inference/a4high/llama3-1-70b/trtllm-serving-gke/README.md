@@ -64,8 +64,8 @@ From your client, complete the following steps:
   export CLUSTER_NAME=<CLUSTER_NAME>           # Name of your GKE cluster
   export GCS_BUCKET=<GCS_BUCKET>               # Cloud Storage bucket name (without gs:// prefix)
   export ARTIFACT_REGISTRY=<ARTIFACT_REGISTRY> # Format: LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY
-  export TRTLLM_IMAGE=trtllm-serving           # Name for the TensorRT-LLM image
-  export TRTLLM_VERSION=latest                 # Version tag for the TensorRT-LLM image
+  export TRTLLM_IMAGE=trtllm                   # Name for the TensorRT-LLM image
+  export TRTLLM_VERSION=0.17.0                 # Version tag for the TensorRT-LLM image
   ```
 
 2. Set the default project:
@@ -149,7 +149,7 @@ The process is orchestrated using a Helm chart that configures all necessary Kub
     --set "volumes.gcsMounts[0].bucketName"=${GCS_BUCKET} \
     --set job.image.repository=${ARTIFACT_REGISTRY}/${TRTLLM_IMAGE} \
     --set job.image.tag=${TRTLLM_VERSION} \
-    $USER-serving-deepseek-r1-model \
+    $USER-serving--model \
     $REPO_ROOT/src/helm-charts/a4high/trtllm-inference
     ```
 

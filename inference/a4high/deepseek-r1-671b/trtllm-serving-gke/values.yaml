@@ -43,7 +43,7 @@ network:
   - name: NVTE_UB_SOCKET_IFNAME
     value: "eth1"
 
-vllm:
+trtllm:
   service:
     type: ClusterIP
     ports:

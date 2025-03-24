@@ -17,24 +17,25 @@
 
 {{- $root := . -}}
 
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: "{{ .Release.Name }}"
-  labels:
-    app: "{{ .Release.Name }}"
-spec:
-  ttlSecondsAfterFinished: {{ .Values.job.ttlSecondsAfterFinished }}
-  parallelism: {{ $nodes }}
-  completions: {{ $nodes }}
-  backoffLimit: 0
+apiVersion: apps/v1
+kind: Deployment
 
+metadata:
+  name: {{ .Release.Name }}-serving
+  labels:
+    app: {{ .Release.Name }}-serving
+spec:
+  replicas: {{ $nodes }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-serving
   template:
     metadata:
       labels:
-        app: "{{ .Release.Name }}-inference-benchmark"
+        app: {{ .Release.Name }}-serving
       annotations:
-        kubectl.kubernetes.io/default-container: inference-benchmark
+        kubectl.kubernetes.io/default-container: serving
+
         {{- if .Values.volumes.gcsMounts }}
         gke-gcsfuse/volumes: "true"
         gke-gcsfuse/cpu-limit: "0"
@@ -66,7 +67,7 @@ spec:
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
       {{- end }}
-      restartPolicy: OnFailure
+      restartPolicy: Always
 
       tolerations:
       - key: nvidia.com/gpu
@@ -74,12 +75,13 @@ spec:
       - key: cloud.google.com/impending-node-termination
         operator: Exists
       volumes:
+        {{ if $root.Values.network.gibVersion }}
+        - name: gib
+          emptyDir: {}
+        {{ end }}
         - name: library-dir-host
           hostPath:
             path: /home/kubernetes/bin/nvidia
-        - name: gib
-          hostPath:
-            path: /home/kubernetes/bin/gib
         - name: shared-memory
           emptyDir:
             medium: "Memory"
@@ -87,10 +89,6 @@ spec:
         - name: local-ssd
           hostPath:
             path: /mnt/stateful_partition/kube-ephemeral-ssd
-        - name: benchmark-script
-          configMap:
-            name: {{ .Release.Name }}-benchmark-script
-            defaultMode: 0700
         {{- range $gcs := .Values.volumes.gcsMounts }}
         - name: "{{ $gcs.bucketName }}"
           csi:
@@ -99,8 +97,29 @@ spec:
               bucketName: "{{ $gcs.bucketName }}"
         {{- end }}
 
+      initContainers:
+      {{ if $root.Values.network.gibVersion }}
+      - name: nccl-plugin-installer
+        image: {{ $root.Values.network.gibVersion }}
+        imagePullPolicy: Always
+        args:
+        - |
+          set -ex
+          /scripts/container_entry.sh install --install-nccl
+          cp -R /var/lib/gib/lib64/. /target/usr/local/gib/lib64
+          cp -R /var/lib/gib/. /target/usr/local/gib
+        command:
+        - /bin/sh
+        - -c
+
+        volumeMounts:
+        - mountPath: /target/usr/local/gib
+          name: gib
+
+      {{ end }}
+
       containers:
-      - name: inference-benchmark
+      - name: serving
         image: "{{ .Values.job.image.repository }}:{{ .Values.job.image.tag }}"
         imagePullPolicy: Always
         securityContext:
@@ -118,13 +137,17 @@ spec:
                 name: "{{ .Values.huggingface.secretName }}"
                 key: "{{ .Values.huggingface.secretData.token }}"
 
+          # Additional NCCL settings
+          {{- range $environment_variable := $root.Values.network.ncclSettings }}
+          - name: {{ $environment_variable.name }}
+            value: "{{ $environment_variable.value }}"
+          {{- end }}
+
           # Enable faster downloads of model weights from HuggingFace
           - name: HF_HUB_ENABLE_HF_TRANSFER
             value: "1"
           - name: LD_LIBRARY_PATH
-            value: "/usr/local/nvidia/lib64"
-          - name: NCCL_DEBUG
-            value: "INFO"
+            value: "/usr/local/nvidia/lib64:/usr/local/lib/"
           # Workload specific environment variables
           - name: MODEL_DOWNLOAD_DIR
             value: "/ssd/{{ .Values.model.name }}"
@@ -140,9 +163,9 @@ spec:
           - |
             #!/bin/bash
 
-            mkdir -p /gcs/benchmark_logs
-
             # Set recommended NCCL environment variables
+            apt-get update && apt-get install -y --no-install-recommends pciutils
+            cat /usr/local/gib/scripts/set_nccl_env.sh
             source /usr/local/gib/scripts/set_nccl_env.sh
 
             # Download the model from HuggingFace and skip the meta original ckpt weights
@@ -164,16 +187,23 @@ spec:
             # Update shared library cache, links
             ldconfig
 
+            sleep infinity
+
             # Copy and execute the benchmark script
             cp /scripts/run_trtllm_bench.sh .
             chmod +x run_trtllm_bench.sh
             ./run_trtllm_bench.sh
 
+
+           
+
         volumeMounts:
-          - name: library-dir-host
-            mountPath: /usr/local/nvidia
+          {{ if $root.Values.network.gibVersion }}
           - name: gib
             mountPath: /usr/local/gib
+          {{ end }}
+          - name: library-dir-host
+            mountPath: /usr/local/nvidia
           - name: shared-memory
             mountPath: /dev/shm
           - name: local-ssd

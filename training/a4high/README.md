@@ -4,15 +4,22 @@ This directory contains configurations and tools for training large language mod
 
 [中文文档](./README_CN.md)
 
+#
+Contributors:
+- Chris Yang
+- Felix Li
+- Suffian Khan
+- Tony Chen
+
 ## Supported Models
 
-- ✅ Llama3-8B FP8 - Ready to use
-- ✅ Mixtral-8x7B FP8 - Ready to use
-- ✅ Llama-3.1-70B FP8 - Ready to use
-- ✅ Llama3-8B BF16 - Ready to use
-- 🚧 Mixtral-8x7B BF16 - Work in progress
+- ✅ Llama-3.1-8B  16 GPUs FP8 - Ready to use
+- ✅ Llama-3.1-8B  16 GPUs BF16 - Ready to use
+- ✅ Llama-3.1-70B 16 GPUs FP8 - Ready to use
 - ✅ Llama-3.1-70B 256 GPUs FP8 - Ready to use
 - ✅ Llama-3.1-70B 256 GPUs BF16 - Ready to use
+- ✅ Mixtral-8x7B  16 GPUs FP8 - Ready to use
+- ✅ Mixtral-8x7B  16 GPUs BF16 - Work in progress
 - ✅ Mixtral-8x7B  256 GPUs FP8 - Ready to use
 - ✅ Mixtral-8x7B  256 GPUs BF16 - Ready to use
 
@@ -22,13 +29,13 @@ We provide the following training configurations:
 
 | Model | Data Type | Configuration File |
 |-------|-----------|-------------------|
-| Llama3-8B | BF16 | `recipe/llama3_8b_bf16.yaml` |
-| Llama3-8B | FP8 | `recipe/llama3_8b_fp8.yaml` |
-| Llama-3.1-70B | FP8 | `recipe/llama-3.1-70b-fp8.yaml` |
-| Mixtral-8x7B | BF16 | `recipe/mixtral8x7b_bf16.yaml` |
-| Mixtral-8x7B | FP8 | `recipe/mixtral8x7b_fp8.yaml` |
+| Llama-3.1-8B (16 GPUs) | FP8 | `recipe/llama-3.1-8b-16gpus-fp8.yaml` |
+| Llama-3.1-8B (16 GPUs) | BF16 | `recipe/llama-3.1-8b-16gpus-bf16.yaml` |
+| Llama-3.1-70B (16 GPUs) | FP8 | `recipe/llama-3.1-70b-16gpus-fp8.yaml` |
 | Llama-3.1-70B (256 GPUs) | FP8 | `recipe/llama-3.1-70b-256gpus-fp8.yaml` |
 | Llama-3.1-70B (256 GPUs) | BF16 | `recipe/llama-3.1-70b-256gpus-bf16.yaml` |
+| Mixtral-8x7B (16 GPUs) | FP8 | `recipe/mixtral8x7b-16gpus-fp8.yaml` |
+| Mixtral-8x7B (16 GPUs) | BF16 | `recipe/mixtral8x7b-16gpus-bf16.yaml` |
 | Mixtral-8x7B (256 GPUs) | BF16 | `recipe/mixtral8x7b-256gpus-bf16.yaml` |
 | Mixtral-8x7B (256 GPUs) | FP8 | `recipe/mixtral8x7b-256gpus-fp8.yaml` |
 
@@ -69,13 +76,13 @@ Training jobs require access to a GCS bucket for storing and reading data. Follo
 
 ```bash
 # Choose a configuration (uncomment the one you want to use)
-# export RECIPE_NAME=llama3_8b_bf16
-# export RECIPE_NAME=llama3_8b_fp8
-# export RECIPE_NAME=llama-3.1-70b-fp8
+# export RECIPE_NAME=llama-3.1-8b-16gpus-fp8
+# export RECIPE_NAME=llama-3.1-8b-16gpus-bf16
+# export RECIPE_NAME=llama-3.1-70b-16gpus-fp8
 export RECIPE_NAME=llama-3.1-70b-256gpus-fp8
 # export RECIPE_NAME=llama-3.1-70b-256gpus-bf16
-# export RECIPE_NAME=mixtral8x7b_bf16
-# export RECIPE_NAME=mixtral8x7b_fp8
+# export RECIPE_NAME=mixtral8x7b-16gpus-fp8
+# export RECIPE_NAME=mixtral8x7b-16gpus-bf16
 # export RECIPE_NAME=mixtral8x7b-256gpus-bf16
 # export RECIPE_NAME=mixtral8x7b-256gpus-fp8
 

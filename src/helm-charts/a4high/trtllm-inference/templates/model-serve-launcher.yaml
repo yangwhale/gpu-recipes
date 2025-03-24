@@ -167,9 +167,9 @@ spec:
           - |
             #!/bin/bash
 
+            mkdir -p /gcs/benchmark_logs
+
             # Set recommended NCCL environment variables
-            apt-get update && apt-get install -y --no-install-recommends pciutils
-            cat /usr/local/gib/scripts/set_nccl_env.sh
             source /usr/local/gib/scripts/set_nccl_env.sh
 
             # Download the model from HuggingFace and skip the meta original ckpt weights
@@ -184,30 +184,23 @@ spec:
 
             # Fix symbolic links - remove libnccl-net.so
             mv /usr/local/nvidia/lib64/libnccl-net.so /usr/local/nvidia/lib64/libnccl-net.so.1
-            ln -sf /usr/local/nvidia/lib64/libnccl-net.so /usr/local/nvidia/lib64/libnccl-net.so.1
+            ln -sf /usr/local/nvidia/lib64/libnccl-net.so /usr/local/nvidia/lib64/libnccl-net.so.1      
 
             export LD_LIBRARY_PATH=/usr/local/lib/python3.12/dist-packages/torch/lib:/usr/local/lib/python3.12/dist-packages/torch_tensorrt/lib:/usr/local/cuda/compat/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda/lib64:/usr/local/tensorrt/lib
 
             # Update shared library cache, links
             ldconfig
 
-            sleep infinity
-
             # Copy and execute the benchmark script
             cp /scripts/run_trtllm_bench.sh .
             chmod +x run_trtllm_bench.sh
             ./run_trtllm_bench.sh
 
-
-           
-
         volumeMounts:
-          {{ if $root.Values.network.gibVersion }}
-          - name: gib
-            mountPath: /usr/local/gib
-          {{ end }}
           - name: library-dir-host
             mountPath: /usr/local/nvidia
+          - name: gib
+            mountPath: /usr/local/gib
           - name: shared-memory
             mountPath: /dev/shm
           - name: local-ssd

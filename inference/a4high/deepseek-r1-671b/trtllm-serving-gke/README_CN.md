@@ -79,7 +79,7 @@
 从您的客户端，克隆`gpu-recipes`仓库并设置关键目录的引用：
 
 ```bash
-git clone https://github.com/ai-hypercomputer/gpu-recipes.git
+git clone -b a4-early-access https://github.com/yangwhale/gpu-recipes.git
 cd gpu-recipes
 export REPO_ROOT=`git rev-parse --show-toplevel`
 export RECIPE_ROOT=$REPO_ROOT/inference/a4high/deepseek-r1-671b/trtllm-serving-gke

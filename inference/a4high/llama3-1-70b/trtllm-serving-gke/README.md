@@ -1,8 +1,8 @@
-# Single Node Inference Benchmark of DeepSeek R1 671B with TensorRT-LLM on A4 High GKE Node Pool
+# Single Node Inference Benchmark of Llama 3.1 70B with TensorRT-LLM on A4 High GKE Node Pool
 
 English | [简体中文](README_CN.md)
 
-This recipe outlines the steps to benchmark the inference of a DeepSeek R1 671B model using [TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM) on an [A4 High GKE Node pool](https://cloud.google.com/kubernetes-engine) with a single node.
+This recipe outlines the steps to benchmark the inference of a Llama 3.1 70B model using [TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM) on an [A4 High GKE Node pool](https://cloud.google.com/kubernetes-engine) with a single node.
 
 ## Orchestration and Deployment Tools
 
@@ -10,7 +10,7 @@ For this recipe, the following setup is used:
 
 - **Orchestration** - [Google Kubernetes Engine (GKE)](https://cloud.google.com/kubernetes-engine)
 - **Job Configuration and Deployment** - Helm charts are used to configure and deploy the necessary Kubernetes resources
-  - The deployment encapsulates the inference of the DeepSeek R1 671B model using TensorRT-LLM
+  - The deployment encapsulates the inference of the Llama 3.1 70B model using TensorRT-LLM
   - Generated manifests adhere to best practices for using RDMA Over Ethernet (RoCE) on GKE
   - Optimized for high-performance inference on A4 High nodes with B200 GPUs
 
@@ -37,7 +37,7 @@ Before running this recipe, ensure your environment is configured as follows:
     - kubectl
 
 - **Model Access**:
-    - A Hugging Face token to access the [DeepSeek R1 671B model](https://huggingface.co/deepseek-ai/DeepSeek-R1)
+    - A Hugging Face token to access the [Llama 3.1 70B model](https://huggingface.co/meta-llama/Llama-3.1-70B)
     - To generate a token:
       1. Create/login to your [Hugging Face account](https://huggingface.co/)
       2. Navigate to Profile > Settings > Access Tokens
@@ -82,7 +82,7 @@ From your client, clone the `gpu-recipes` repository and set references to key d
 git clone -b a4-early-access https://github.com/yangwhale/gpu-recipes.git
 cd gpu-recipes
 export REPO_ROOT=`git rev-parse --show-toplevel`
-export RECIPE_ROOT=$REPO_ROOT/inference/a4high/deepseek-r1-671b/trtllm-serving-gke
+export RECIPE_ROOT=$REPO_ROOT/inference/a4high/llama3-1-70b/trtllm-serving-gke
 ```
 
 ### Get Cluster Credentials
@@ -119,12 +119,12 @@ Follow these steps to build and push the TensorRT-LLM container:
     gcloud beta builds log $BUILD_ID --region=$REGION
     ```
 
-## Single A4 High Node Serving of DeepSeek R1 671B with TensorRT-LLM
+## Single A4 High Node Serving of Llama 3.1 70B with TensorRT-LLM
 
-This recipe serves the DeepSeek R1 671B model using TensorRT-LLM on a single A4 High node, optimized for high-performance inference with FP8 precision.
+This recipe serves the Llama 3.1 70B model using TensorRT-LLM on a single A4 High node, optimized for high-performance inference with FP8 precision.
 
 To start the serving, the recipe launches a TensorRT-LLM server that performs the following steps:
-1. Downloads the full DeepSeek R1 671B model checkpoints from [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1)
+1. Downloads the full Llama 3.1 70B model checkpoints from [Hugging Face](https://huggingface.co/meta-llama/Llama-3.1-70B)
 2. Loads the model checkpoints and applies TensorRT-LLM optimizations including tensor parallelism and FP8 quantization
 3. Builds optimized TensorRT engines for each GPU
 4. Starts the inference server with the optimized model ready to respond to requests
@@ -149,18 +149,18 @@ The process is orchestrated using a Helm chart that configures all necessary Kub
     --set "volumes.gcsMounts[0].bucketName"=${GCS_BUCKET} \
     --set job.image.repository=${ARTIFACT_REGISTRY}/${TRTLLM_IMAGE} \
     --set job.image.tag=${TRTLLM_VERSION} \
-    $USER-serving--model \
+    $USER-serving-llama3-1-70b-model \
     $REPO_ROOT/src/helm-charts/a4high/trtllm-inference
     ```
 
 3. View the logs for the deployment to monitor model loading and engine building:
     ```bash
-    kubectl logs -f deployment/$USER-serving-deepseek-r1-model
+    kubectl logs -f deployment/$USER-serving-llama3-1-70b-model
     ```
 
 4. Verify the deployment status:
     ```bash
-    kubectl get deployment/$USER-serving-deepseek-r1-model
+    kubectl get deployment/$USER-serving-llama3-1-70b-model
     ```
 
 5. During initialization, you'll see logs showing the model loading and TensorRT engine building process. Once the server is ready, you'll see log output similar to:
@@ -181,7 +181,7 @@ The process is orchestrated using a Helm chart that configures all necessary Kub
 6. To make API requests to the service, you can port forward the service to your local machine:
 
     ```bash
-    kubectl port-forward svc/$USER-serving-deepseek-r1-model-svc 8000:8000
+    kubectl port-forward svc/$USER-serving-llama3-1-70b-model-svc 8000:8000
     ```
 
 7. Make API requests to the service using the OpenAI-compatible API:
@@ -190,7 +190,7 @@ The process is orchestrated using a Helm chart that configures all necessary Kub
     curl http://localhost:8000/v1/chat/completions \
     -H "Content-Type: application/json" \
     -d '{
-      "model": "deepseek-ai/DeepSeek-R1",
+      "model": "meta-llama/Llama-3.1-70B",
       "messages": [
         {
           "role": "system",
@@ -213,7 +213,7 @@ The process is orchestrated using a Helm chart that configures all necessary Kub
       "id": "trtllm-fe5a9d3b7c",
       "object": "chat.completion",
       "created": 1742011687,
-      "model": "deepseek-ai/DeepSeek-R1",
+      "model": "meta-llama/Llama-3.1-70B",
       "choices": [
         {
           "index": 0,
@@ -240,8 +240,8 @@ The process is orchestrated using a Helm chart that configures all necessary Kub
 9. To run benchmarks for inference, use the TensorRT-LLM benchmarking utility:
 
     ```bash
-    kubectl exec -it deployments/$USER-serving-deepseek-r1-model -- python3 -m tensorrt_llm.tools.benchmark \
-      --engine-dir /tmp/tensorrt_llm_models/deepseek-ai/DeepSeek-R1 \
+    kubectl exec -it deployments/$USER-serving-llama3-1-70b-model -- python3 -m tensorrt_llm.tools.benchmark \
+      --engine-dir /tmp/tensorrt_llm_models/meta-llama/Llama-3.1-70B \
       --mode generation \
       --input-tokens 512 \
       --output-tokens 128 \
@@ -255,7 +255,7 @@ The process is orchestrated using a Helm chart that configures all necessary Kub
     ```
     ======================= Benchmark Result =======================
     Engine Information:
-      Model name: deepseek-ai/DeepSeek-R1
+      Model name: meta-llama/Llama-3.1-70B
       Engine precision: float8
       Tensor parallelism: 8
       Pipeline parallelism: 1
@@ -292,7 +292,7 @@ To clean up the resources created by this recipe, complete the following steps:
 1. Uninstall the helm chart:
 
     ```bash
-    helm uninstall $USER-serving-deepseek-r1-model
+    helm uninstall $USER-serving-llama3-1-70b-model
     ```
 
 2. Delete the Kubernetes Secret:
@@ -328,5 +328,5 @@ helm install -f values.yaml \
     --set network.subnetworks[7]=rdma-5 \
     --set network.subnetworks[8]=rdma-6 \
     --set network.subnetworks[9]=rdma-7 \
-    $USER-serving-deepseek-r1-model \
+    $USER-serving-llama3-1-70b-model \
     $REPO_ROOT/src/helm-charts/a4high/trtllm-inference

@@ -64,7 +64,7 @@
   export CLUSTER_NAME=<CLUSTER_NAME>           # GKE集群的名称
   export GCS_BUCKET=<GCS_BUCKET>               # Cloud Storage存储桶名称（不包含gs://前缀）
   export ARTIFACT_REGISTRY=<ARTIFACT_REGISTRY> # 格式：LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY
-  export TRTLLM_IMAGE=trtllm-serving           # TensorRT-LLM镜像的名称
+  export TRTLLM_IMAGE=trtllm                   # TensorRT-LLM镜像的名称
   export TRTLLM_VERSION=latest                 # TensorRT-LLM镜像的版本标签
   ```
 

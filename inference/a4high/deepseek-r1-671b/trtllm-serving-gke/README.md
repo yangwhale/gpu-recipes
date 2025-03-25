@@ -64,7 +64,7 @@ From your client, complete the following steps:
   export CLUSTER_NAME=<CLUSTER_NAME>           # Name of your GKE cluster
   export GCS_BUCKET=<GCS_BUCKET>               # Cloud Storage bucket name (without gs:// prefix)
   export ARTIFACT_REGISTRY=<ARTIFACT_REGISTRY> # Format: LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY
-  export TRTLLM_IMAGE=trtllm-serving           # Name for the TensorRT-LLM image
+  export TRTLLM_IMAGE=trtllm                   # Name for the TensorRT-LLM image
   export TRTLLM_VERSION=latest                 # Version tag for the TensorRT-LLM image
   ```
 

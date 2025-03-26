@@ -19,7 +19,7 @@ huggingface:
     token: "hf_api_token"
 
 model:
-  name: deepseek-ai/DeepSeek-R1
+  name: deepseek-ai/DeepSeek-V3
   tp_size: 8
 
 job:

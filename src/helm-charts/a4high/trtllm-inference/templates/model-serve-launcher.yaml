@@ -173,7 +173,7 @@ spec:
             source /usr/local/gib/scripts/set_nccl_env.sh
 
             # Download the model from HuggingFace and skip the meta original ckpt weights
-            huggingface-cli download {{ .Values.model.name }} --exclude="*original*" --local-dir ${MODEL_DOWNLOAD_DIR} --token ${HF_TOKEN} --local-dir-use-symlinks False
+            # huggingface-cli download {{ .Values.model.name }} --exclude="*original*" --local-dir ${MODEL_DOWNLOAD_DIR} --token ${HF_TOKEN} --local-dir-use-symlinks False
 
             # List contents in LD_LIBRARY_PATH
             echo "Contents of ${LD_LIBRARY_PATH}:"
@@ -190,6 +190,8 @@ spec:
 
             # Update shared library cache, links
             ldconfig
+
+            sleep infinity
 
             # Copy and execute the benchmark script
             cp /scripts/run_trtllm_bench.sh .

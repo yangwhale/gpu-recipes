@@ -85,7 +85,7 @@ From your client, complete the following steps:
 From your client, clone the `gpu-recipes` repository and set a reference to the recipe folder.
 
 ```
-git clone https://github.com/ai-hypercomputer/gpu-recipes.git
+git clone -b a4-early-access https://github.com/yangwhale/gpu-recipes.git
 cd gpu-recipes
 export REPO_ROOT=`git rev-parse --show-toplevel`
 export RECIPE_ROOT=$REPO_ROOT/inference/a4high/deepseek-r1-671b/vllm-serving-gke

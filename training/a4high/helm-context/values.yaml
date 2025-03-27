@@ -25,7 +25,7 @@ volumes:
   # Note: For expedience it was only implemented it for a single bucket (not an array). 
   # <GCS_BUCKET>: the name of your Cloud Storage bucket. Do not include the gs:// prefix
   jitGcsMount:
-    bucketName: "agi-b200"
+    bucketName: "ali-b200"
     mountPath: "/gcs"
 
 gcsDownload: # downloads or synchronizes contents of a GCS bucket folder on initialization
@@ -35,7 +35,8 @@ gcsDownload: # downloads or synchronizes contents of a GCS bucket folder on init
 workload:
   #  image: "us-central1-docker.pkg.dev/supercomputer-testing/sufkha-nemo-demo-test/nemo:24.12-mpi"
   # image: "us-central1-docker.pkg.dev/supercomputer-testing/sufkha-nemo-demo-test/nemo:02242025-mpi"
-  image: "us-central1-docker.pkg.dev/agi-b200-451408/us-dockerhub-for-ngc/nemo:25.02-rc4-mpi-fp8"
+  # image: "us-central1-docker.pkg.dev/agi-b200-451408/us-dockerhub-for-ngc/nemo:25.02-rc4-mpi-fp8"
+  image: "us-central1-docker.pkg.dev/ali-gpu-test/ali-gpu-poc/nemo:25.02-rc4-mpi-fp8"
   # image: "us-central1-docker.pkg.dev/supercomputer-testing/sufkha-nemo-demo-test/nemo:25.02-rc4-mpi-fp8"
   torchDistributedTarget: "/opt/NeMo/examples/nlp/language_modeling/megatron_gpt_pretraining.py"
 

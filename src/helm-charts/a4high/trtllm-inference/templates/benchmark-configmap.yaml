@@ -39,13 +39,13 @@ data:
 
         pp_size=1
 
-        trtllm-bench --model $model_name --model_path /ssd/${model_name} --workspace /ssd build \
+        trtllm-bench --model $model_name --workspace /ssd build \
           --tp_size $tp_size --quantization FP8 --dataset $dataset_file
 
         engine_dir="/ssd/${model_name}/tp_${tp_size}_pp_${pp_size}"
 
         # Save throughput output to a file
-        trtllm-bench --model $model_name --model_path /ssd/${model_name} throughput \
+        trtllm-bench --model $model_name throughput \
           --dataset $dataset_file --engine_dir $engine_dir \
           --kv_cache_free_gpu_mem_fraction 0.95 > $output_file
 

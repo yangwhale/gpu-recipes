@@ -2,6 +2,8 @@
 
 本文档介绍如何在Google Kubernetes Engine (GKE) A4节点池上使用SGLang部署和运行DeepSeek R1 671B大型语言模型，包含完整的部署流程、测试方法和性能评估。
 
+## 注意：正在开发中，等待 SGLang 支持 B200 的版本发布。
+
 ## 1. 概述
 
 本指南将帮助您：

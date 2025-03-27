@@ -191,8 +191,6 @@ spec:
             # Update shared library cache, links
             ldconfig
 
-            sleep infinity
-
             # Copy and execute the benchmark script
             cp /scripts/run_trtllm_bench.sh .
             chmod +x run_trtllm_bench.sh

@@ -21,18 +21,18 @@ apiVersion: apps/v1
 kind: Deployment
 
 metadata:
-  name: {{ .Release.Name }}-serving
+  name: {{ .Release.Name }}
   labels:
-    app: {{ .Release.Name }}-serving
+    app: {{ .Release.Name }}
 spec:
   replicas: {{ $nodes }}
   selector:
     matchLabels:
-      app: {{ .Release.Name }}-serving
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}-serving
+        app: {{ .Release.Name }}
       annotations:
         kubectl.kubernetes.io/default-container: serving
 
@@ -75,13 +75,12 @@ spec:
       - key: cloud.google.com/impending-node-termination
         operator: Exists
       volumes:
-        {{ if $root.Values.network.gibVersion }}
-        - name: gib
-          emptyDir: {}
-        {{ end }}
         - name: library-dir-host
           hostPath:
             path: /home/kubernetes/bin/nvidia
+        - name: gib
+          hostPath:
+            path: /home/kubernetes/bin/gib
         - name: shared-memory
           emptyDir:
             medium: "Memory"
@@ -96,27 +95,6 @@ spec:
             volumeAttributes:
               bucketName: "{{ $gcs.bucketName }}"
         {{- end }}
-
-      initContainers:
-      {{ if $root.Values.network.gibVersion }}
-      - name: nccl-plugin-installer
-        image: {{ $root.Values.network.gibVersion }}
-        imagePullPolicy: Always
-        args:
-        - |
-          set -ex
-          /scripts/container_entry.sh install --install-nccl
-          cp -R /var/lib/gib/lib64/. /target/usr/local/gib/lib64
-          cp -R /var/lib/gib/. /target/usr/local/gib
-        command:
-        - /bin/sh
-        - -c
-
-        volumeMounts:
-        - mountPath: /target/usr/local/gib
-          name: gib
-
-      {{ end }}
 
       containers:
       - name: serving
@@ -137,17 +115,13 @@ spec:
                 name: "{{ .Values.huggingface.secretName }}"
                 key: "{{ .Values.huggingface.secretData.token }}"
 
-          # Additional NCCL settings
-          {{- range $environment_variable := $root.Values.network.ncclSettings }}
-          - name: {{ $environment_variable.name }}
-            value: "{{ $environment_variable.value }}"
-          {{- end }}
-
           # Enable faster downloads of model weights from HuggingFace
           - name: HF_HUB_ENABLE_HF_TRANSFER
             value: "1"
           - name: LD_LIBRARY_PATH
-            value: "/usr/local/nvidia/lib64:/usr/local/lib/"
+            value: "/usr/local/nvidia/lib64"
+          - name: NCCL_DEBUG
+            value: "INFO"
           # Workload specific environment variables
           - name: MODEL_DOWNLOAD_DIR
             value: "/ssd/{{ .Values.model.name }}"
@@ -164,56 +138,24 @@ spec:
             #!/bin/bash
 
             # Set recommended NCCL environment variables
-            apt-get update && apt-get install -y --no-install-recommends pciutils
-            cat /usr/local/gib/scripts/set_nccl_env.sh
             source /usr/local/gib/scripts/set_nccl_env.sh
-            ldconfig
-
-            # Build and install vLLM nightly from source (main)
-            # Workaround until a new version of vLLM is released with Blackwell GPU support.
-
-            echo -e "Building and installing vLLM nightly from source. This can take ~10 minutes."
-            pip uninstall -y vllm
-            apt-get update && apt-get install -y --no-install-recommends \
-              ccache \
-              kmod \
-              git \
-              python3-pip \
-              && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-            # Clone vLLM from source
-            git clone -b v0.8.0 https://github.com/vllm-project/vllm.git /vllm-workspace/vllm && \
-            cd /vllm-workspace/vllm
-
-            # Build vLLM
-            python3 /vllm-workspace/vllm/use_existing_torch.py && \
-            pip install -r requirements/build.txt && \
-            pip install setuptools_scm && \
-            pip install --force-reinstall -v "numpy<2.0" && \
-            MAX_JOBS=200 python3 setup.py develop
-
-            # Copy vLLM to the dist-packages directory
-            cp -r /vllm-workspace/vllm/vllm /usr/local/lib/python3.12/dist-packages/vllm
-            vllm -v
-            echo -e "vLLM build completed successfully."
-
-            # Build completed
 
             # Launch the server
-            VLLM_USE_V1=1 VLLM_FLASH_ATTN_VERSION=2 VLLM_WORKER_MULTIPROC_METHOD=spawn vllm serve \
+            VLLM_USE_V1=1 VLLM_FLASH_ATTN_VERSION=2 VLLM_ATTENTION_BACKEND=FLASHINFER \
+            VLLM_WORKER_MULTIPROC_METHOD=spawn vllm serve \
             {{ .Values.model.name }} \
             --download_dir /ssd \
             --trust-remote-code \
             --tensor-parallel-size {{ .Values.model.tp_size }} \
             --disable-log-requests
 
+            sleep infinity
+
         volumeMounts:
-          {{ if $root.Values.network.gibVersion }}
-          - name: gib
-            mountPath: /usr/local/gib
-          {{ end }}
           - name: library-dir-host
             mountPath: /usr/local/nvidia
+          - name: gib
+            mountPath: /usr/local/gib
           - name: shared-memory
             mountPath: /dev/shm
           - name: local-ssd

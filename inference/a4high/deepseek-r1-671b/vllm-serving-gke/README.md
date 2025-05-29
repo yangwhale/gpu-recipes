@@ -57,9 +57,9 @@ From your client, complete the following steps:
   export CLUSTER_REGION=<CLUSTER_REGION>
   export CLUSTER_NAME=<CLUSTER_NAME>
   export GCS_BUCKET=<GCS_BUCKET>
-  export ARTIFACT_REGISTRY=<ARTIFACT_REGISTRY>
+  export ARTIFACT_REGISTRY=vllm
   export VLLM_IMAGE=vllm-openai
-  export VLLM_VERSION=nightly
+  export VLLM_VERSION=v0.9.0
   ```
 
   Replace the following values:
@@ -69,10 +69,6 @@ From your client, complete the following steps:
   - `<CLUSTER_REGION>`: the region where your cluster is located
   - `<CLUSTER_NAME>`: the name of your GKE cluster
   - `<GCS_BUCKET>`: the name of your Cloud Storage bucket. Do not include the `gs://` prefix
-  - `<ARTIFACT_REGISTRY>`: the full name of your Artifact
-    Registry in the following format: *LOCATION*-docker.pkg.dev/*PROJECT_ID*/*REPOSITORY*
-  - `<VLLM_IMAGE>`: the name of the vLLM image
-  - `<VLLM_VERSION>`: the version of the vLLM image. For A4-high (B200 GPUs), we recommend setting to nightly.
 
 1. Set the default project:
 
@@ -98,36 +94,6 @@ From your client, get the credentials for your cluster.
 ```
 gcloud container clusters get-credentials $CLUSTER_NAME --region $CLUSTER_REGION
 ```
-
-### Build and push a docker container image to Artifact Registry
-
-To build the container, complete the following steps from your client:
-
-1. Use Cloud Build to build and push the container image.
-
-    ```bash
-    cd $REPO_ROOT/src/docker/vllm-nightly
-    gcloud builds submit --region=${REGION} \
-        --config cloudbuild.yml \
-        --substitutions _ARTIFACT_REGISTRY=$ARTIFACT_REGISTRY,_VLLM_IMAGE=$VLLM_IMAGE,_VLLM_VERSION=$VLLM_VERSION \
-        --timeout "2h" \
-        --machine-type=e2-highcpu-32 \
-        --disk-size=1000 \
-        --quiet \
-        --async
-    ```
-  This command outputs the `build ID`.
-
-2. You can monitor the build progress by streaming the logs for the `build ID`.
-   To do this, run the following command.
-
-   Replace `<BUILD_ID>` with your build ID.
-
-   ```bash
-   BUILD_ID=<BUILD_ID>
-
-   gcloud beta builds log $BUILD_ID --region=$REGION
-   ```
 
 ## Single A4 High Node Serving of DeepSeek R1 671B
 
@@ -271,10 +237,14 @@ The recipe uses the helm chart to run the above steps.
     ./stream_chat.sh "Which is bigger 9.9 or 9.11 ?"
     ```
 
-9. To run benchmarks for inference, use the default benchmarking tool from vLLM
+9. To run benchmarks for inference, first install the required dependencies, then use the default benchmarking tool from vLLM
 
     ```bash
-    kubectl exec -it deployments/$USER-serving-deepseek-r1-model-serving -- python3 vllm/benchmarks/benchmark_serving.py --model deepseek-ai/DeepSeek-R1 --dataset-name random --ignore-eos --num-prompts 1100 --random-input-len 1000 --random-output-len 1000 --port 8000 --backend vllm
+    # Install required dependencies for benchmarking
+    kubectl exec -it deployments/$USER-serving-deepseek-r1-model -- pip install datasets
+    
+    # Run the benchmark
+    kubectl exec -it deployments/$USER-serving-deepseek-r1-model -- python3 benchmarks/benchmark_serving.py --model deepseek-ai/DeepSeek-R1 --dataset-name random --ignore-eos --num-prompts 1100 --random-input-len 1000 --random-output-len 1000 --port 8000 --backend vllm
     ```
 
     Once the benchmark is done, you can find the results in the GCS Bucket. You should see logs similar to:
@@ -318,34 +288,3 @@ To clean up the resources created by this recipe, complete the following steps:
     ```bash
     kubectl delete secret hf-secret
     ```
-
-### Running the recipe on a cluster that doesn't use the default configuration.
-
-If you created your cluster using the [GKE environment setup guide](../../../../docs/configuring-environment-gke-a4-high.md), it's configured with default settings that include the names for networks and subnetworks used for communication between:
-
-- The host to external services
-- GPU-to GPU communication
-
-For clusters with this default configuration, the Helm chart can automatically generate the [required networking annotations in a Pod's metadata](https://cloud.google.com/ai-hypercomputer/docs/create/gke-ai-hypercompute-custom#configure-pod-manifests-rdma). Therefore, you can use the streamlined command to install the chart, as described in the the [Single A4 High Node Benchmarking using FP8 Quantization](#single-a4-high-node-benchmarking-using-fp8-quantization) section.
-
-To configure the correct networking annotations for a cluster that uses non-default names for GKE Network resources, you must provide the names of the GKE Network resources in your cluster when installing the chart. Use the following example command, remembering to replace the example values with the actual names of your cluster's GKE Network resources:
-
-```bash
-cd $RECIPE_ROOT
-helm  install -f values.yaml \
-    --set job.image.repository=${ARTIFACT_REGISTRY}/${VLLM_IMAGE} \
-    --set job.image.tag=${VLLM_VERSION} \
-    --set volumes.gcsMounts[0].bucketName=${GCS_BUCKET} \
-    --set network.subnetworks[0]=default \
-    --set network.subnetworks[1]=gvnic-1 \
-    --set network.subnetworks[2]=rdma-0 \
-    --set network.subnetworks[3]=rdma-1 \
-    --set network.subnetworks[4]=rdma-2 \
-    --set network.subnetworks[5]=rdma-3 \
-    --set network.subnetworks[6]=rdma-4 \
-    --set network.subnetworks[7]=rdma-5 \
-    --set network.subnetworks[8]=rdma-6 \
-    --set network.subnetworks[9]=rdma-7 \
-    $USER-benchmark-deepseek-r1-model \
-    $REPO_ROOT/src/helm-charts/a4high/vllm-inference
-```

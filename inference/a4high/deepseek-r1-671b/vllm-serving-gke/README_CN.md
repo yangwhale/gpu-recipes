@@ -294,3 +294,220 @@ gcloud container clusters get-credentials $CLUSTER_NAME --region $CLUSTER_REGION
     ```bash
     kubectl delete secret hf-secret
     ```
+## 单机版A4 GCE实例部署（可选）
+
+除了在GKE集群上部署外，您也可以在单个A4 GCE实例上直接运行DeepSeek R1 671B模型。这种方法适用于需要更直接控制或测试环境的场景。
+
+### 前提条件
+
+- 一个配备8个B200 GPU的A4 GCE实例
+- 32个本地NVMe SSD磁盘
+- 已安装NVIDIA驱动程序
+- 具有sudo权限的用户账户
+
+### 配置本地存储
+
+首先，我们需要将32个本地NVMe SSD配置为RAID 0阵列以获得最佳性能：
+
+```bash
+# 创建RAID 0阵列
+sudo mdadm --create /dev/md0 --level=0 --raid-devices=32 \
+/dev/disk/by-id/google-local-nvme-ssd-0 \
+/dev/disk/by-id/google-local-nvme-ssd-1 \
+/dev/disk/by-id/google-local-nvme-ssd-2 \
+/dev/disk/by-id/google-local-nvme-ssd-3 \
+/dev/disk/by-id/google-local-nvme-ssd-4 \
+/dev/disk/by-id/google-local-nvme-ssd-5 \
+/dev/disk/by-id/google-local-nvme-ssd-6 \
+/dev/disk/by-id/google-local-nvme-ssd-7 \
+/dev/disk/by-id/google-local-nvme-ssd-8 \
+/dev/disk/by-id/google-local-nvme-ssd-9 \
+/dev/disk/by-id/google-local-nvme-ssd-10 \
+/dev/disk/by-id/google-local-nvme-ssd-11 \
+/dev/disk/by-id/google-local-nvme-ssd-12 \
+/dev/disk/by-id/google-local-nvme-ssd-13 \
+/dev/disk/by-id/google-local-nvme-ssd-14 \
+/dev/disk/by-id/google-local-nvme-ssd-15 \
+/dev/disk/by-id/google-local-nvme-ssd-16 \
+/dev/disk/by-id/google-local-nvme-ssd-17 \
+/dev/disk/by-id/google-local-nvme-ssd-18 \
+/dev/disk/by-id/google-local-nvme-ssd-19 \
+/dev/disk/by-id/google-local-nvme-ssd-20 \
+/dev/disk/by-id/google-local-nvme-ssd-21 \
+/dev/disk/by-id/google-local-nvme-ssd-22 \
+/dev/disk/by-id/google-local-nvme-ssd-23 \
+/dev/disk/by-id/google-local-nvme-ssd-24 \
+/dev/disk/by-id/google-local-nvme-ssd-25 \
+/dev/disk/by-id/google-local-nvme-ssd-26 \
+/dev/disk/by-id/google-local-nvme-ssd-27 \
+/dev/disk/by-id/google-local-nvme-ssd-28 \
+/dev/disk/by-id/google-local-nvme-ssd-29 \
+/dev/disk/by-id/google-local-nvme-ssd-30 \
+/dev/disk/by-id/google-local-nvme-ssd-31
+
+# 格式化并挂载文件系统
+sudo mkfs.ext4 -F /dev/md0
+sudo mkdir -p /lssd
+sudo mount /dev/md0 /lssd
+sudo chmod a+w /lssd
+```
+
+### 安装Docker和NVIDIA容器工具包
+
+```bash
+# 更新系统包
+sudo dnf check-update
+sudo dnf install dnf-utils
+sudo dnf install device-mapper-persistent-data lvm2
+
+# 添加Docker仓库并安装
+sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin nvidia-container-toolkit -y
+
+# 将用户添加到docker组（替换<your username>为您的用户名）
+sudo usermod -aG docker <your username>
+
+# 配置Docker使用NVIDIA运行时
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json > /dev/null << 'EOF'
+{
+    "default-runtime": "nvidia",
+    "runtimes": {
+        "nvidia": {
+            "path": "nvidia-container-runtime",
+            "runtimeArgs": []
+        }
+    }
+}
+EOF
+
+# 启动Docker服务
+sudo service docker start
+```
+
+### 运行vLLM服务器
+
+```bash
+# 切换到root用户并创建模型存储目录
+sudo su
+mkdir -p /lssd/huggingface
+
+# 运行vLLM容器（替换<your hugging face hub token>为您的Hugging Face令牌）
+docker run --runtime nvidia --gpus all \
+    -v /lssd/huggingface:/root/huggingface \
+    -e "HUGGING_FACE_HUB_TOKEN=<your hugging face hub token>" \
+    -e "VLLM_USE_V1=1" \
+    -e "VLLM_FLASH_ATTN_VERSION=2" \
+    -e "VLLM_ATTENTION_BACKEND=FLASHINFER" \
+    -e "VLLM_WORKER_MULTIPROC_METHOD=spawn" \
+    -p 8000:8000 \
+    --ipc=host \
+    vllm/vllm-openai:v0.9.0 \
+    --model deepseek-ai/DeepSeek-R1 \
+    --download_dir /root/huggingface \
+    --trust-remote-code \
+    --tensor-parallel-size 8 \
+    --disable-log-requests
+```
+
+### 使用LLMPerf进行性能测试
+
+LLMPerf是一个专业的大语言模型性能测试工具，可以提供更详细的性能指标。
+
+1. **安装LLMPerf**：
+
+```bash
+# 克隆LLMPerf仓库
+git clone https://github.com/ray-project/llmperf.git
+cd llmperf
+
+# 修改Python版本要求（如果需要）
+# 编辑pyproject.toml文件，将：
+# requires-python = ">=3.8, <3.11"
+# 改为：
+# requires-python = ">=3.8, <=3.13"
+
+# 安装LLMPerf
+pip install -e .
+```
+
+2. **配置环境变量**：
+
+```bash
+export OPENAI_API_KEY=secret_abcdefg
+export OPENAI_API_BASE="http://localhost:8000/v1"
+```
+
+3. **运行性能基准测试**：
+
+```bash
+python3 token_benchmark_ray.py \
+--model "deepseek-ai/DeepSeek-R1" \
+--mean-input-tokens 1000 \
+--stddev-input-tokens 150 \
+--mean-output-tokens 1000 \
+--stddev-output-tokens 50 \
+--max-num-completed-requests 640 \
+--timeout 600 \
+--num-concurrent-requests 64 \
+--results-dir "result_outputs" \
+--llm-api openai \
+--additional-sampling-params '{}'
+```
+
+**测试参数说明**：
+- `--mean-input-tokens 1000`: 平均输入token数量
+- `--stddev-input-tokens 150`: 输入token数量的标准差
+- `--mean-output-tokens 1000`: 平均输出token数量
+- `--stddev-output-tokens 50`: 输出token数量的标准差
+- `--max-num-completed-requests 640`: 最大完成请求数
+- `--timeout 600`: 超时时间（秒）
+- `--num-concurrent-requests 64`: 并发请求数
+
+4. **查看测试结果**：
+
+测试完成后，结果将保存在`result_outputs`目录中。您可以查看详细的性能指标，包括：
+- 吞吐量（tokens/秒）
+- 延迟分布
+- 首token时间（TTFT）
+- token间延迟
+- 错误率统计
+
+### 单机版部署的优势
+
+- **更直接的控制**：可以直接访问系统资源和配置
+- **更简单的网络配置**：无需复杂的Kubernetes网络设置
+- **更容易调试**：可以直接查看容器日志和系统状态
+- **更高的性能**：减少了Kubernetes的开销
+- **更灵活的资源管理**：可以精确控制内存和存储分配
+
+### 在不使用默认配置的集群上运行此指南
+
+如果您使用[GKE环境设置指南](../../../../docs/configuring-environment-gke-a4-high.md)创建集群，它将配置为默认设置，包括用于以下通信的网络和子网名称：
+
+- 主机到外部服务
+- GPU到GPU通信
+
+对于使用此默认配置的集群，Helm chart可以自动生成[Pod元数据中所需的网络注释](https://cloud.google.com/ai-hypercomputer/docs/create/gke-ai-hypercompute-custom#configure-pod-manifests-rdma)。因此，您可以使用本指南前面描述的简化命令来安装chart。
+
+要为使用非默认GKE网络资源名称的集群配置正确的网络注释，您必须在安装chart时提供集群中GKE网络资源的名称。使用以下示例命令，记得将示例值替换为集群的GKE网络资源的实际名称：
+
+```bash
+cd $RECIPE_ROOT
+helm install -f values.yaml \
+    --set job.image.repository=${ARTIFACT_REGISTRY}/${VLLM_IMAGE} \
+    --set job.image.tag=${VLLM_VERSION} \
+    --set volumes.gcsMounts[0].bucketName=${GCS_BUCKET} \
+    --set network.subnetworks[0]=default \
+    --set network.subnetworks[1]=gvnic-1 \
+    --set network.subnetworks[2]=rdma-0 \
+    --set network.subnetworks[3]=rdma-1 \
+    --set network.subnetworks[4]=rdma-2 \
+    --set network.subnetworks[5]=rdma-3 \
+    --set network.subnetworks[6]=rdma-4 \
+    --set network.subnetworks[7]=rdma-5 \
+    --set network.subnetworks[8]=rdma-6 \
+    --set network.subnetworks[9]=rdma-7 \
+    $USER-serving-deepseek-r1-model \
+    $REPO_ROOT/src/helm-charts/a4high/vllm-inference
+```

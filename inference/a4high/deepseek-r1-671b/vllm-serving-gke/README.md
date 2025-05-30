@@ -288,3 +288,189 @@ To clean up the resources created by this recipe, complete the following steps:
     ```bash
     kubectl delete secret hf-secret
     ```
+## Single A4 GCE Instance Deployment (Alternative)
+
+In addition to deploying on a GKE cluster, you can also run the DeepSeek R1 671B model directly on a single A4 GCE instance. This approach is suitable for scenarios requiring more direct control or testing environments.
+
+### Prerequisites
+
+- An A4 GCE instance with 8 B200 GPUs
+- 32 local NVMe SSD disks
+- NVIDIA drivers installed
+- User account with sudo privileges
+
+### Configure Local Storage
+
+First, we need to configure the 32 local NVMe SSDs as a RAID 0 array for optimal performance:
+
+```bash
+# Create RAID 0 array
+sudo mdadm --create /dev/md0 --level=0 --raid-devices=32 \
+/dev/disk/by-id/google-local-nvme-ssd-0 \
+/dev/disk/by-id/google-local-nvme-ssd-1 \
+/dev/disk/by-id/google-local-nvme-ssd-2 \
+/dev/disk/by-id/google-local-nvme-ssd-3 \
+/dev/disk/by-id/google-local-nvme-ssd-4 \
+/dev/disk/by-id/google-local-nvme-ssd-5 \
+/dev/disk/by-id/google-local-nvme-ssd-6 \
+/dev/disk/by-id/google-local-nvme-ssd-7 \
+/dev/disk/by-id/google-local-nvme-ssd-8 \
+/dev/disk/by-id/google-local-nvme-ssd-9 \
+/dev/disk/by-id/google-local-nvme-ssd-10 \
+/dev/disk/by-id/google-local-nvme-ssd-11 \
+/dev/disk/by-id/google-local-nvme-ssd-12 \
+/dev/disk/by-id/google-local-nvme-ssd-13 \
+/dev/disk/by-id/google-local-nvme-ssd-14 \
+/dev/disk/by-id/google-local-nvme-ssd-15 \
+/dev/disk/by-id/google-local-nvme-ssd-16 \
+/dev/disk/by-id/google-local-nvme-ssd-17 \
+/dev/disk/by-id/google-local-nvme-ssd-18 \
+/dev/disk/by-id/google-local-nvme-ssd-19 \
+/dev/disk/by-id/google-local-nvme-ssd-20 \
+/dev/disk/by-id/google-local-nvme-ssd-21 \
+/dev/disk/by-id/google-local-nvme-ssd-22 \
+/dev/disk/by-id/google-local-nvme-ssd-23 \
+/dev/disk/by-id/google-local-nvme-ssd-24 \
+/dev/disk/by-id/google-local-nvme-ssd-25 \
+/dev/disk/by-id/google-local-nvme-ssd-26 \
+/dev/disk/by-id/google-local-nvme-ssd-27 \
+/dev/disk/by-id/google-local-nvme-ssd-28 \
+/dev/disk/by-id/google-local-nvme-ssd-29 \
+/dev/disk/by-id/google-local-nvme-ssd-30 \
+/dev/disk/by-id/google-local-nvme-ssd-31
+
+# Format and mount the filesystem
+sudo mkfs.ext4 -F /dev/md0
+sudo mkdir -p /lssd
+sudo mount /dev/md0 /lssd
+sudo chmod a+w /lssd
+```
+
+### Install Docker and NVIDIA Container Toolkit
+
+```bash
+# Update system packages
+sudo dnf check-update
+sudo dnf install dnf-utils
+sudo dnf install device-mapper-persistent-data lvm2
+
+# Add Docker repository and install
+sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin nvidia-container-toolkit -y
+
+# Add user to docker group (replace <your username> with your username)
+sudo usermod -aG docker <your username>
+
+# Configure Docker to use NVIDIA runtime
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json > /dev/null << 'EOF'
+{
+    "default-runtime": "nvidia",
+    "runtimes": {
+        "nvidia": {
+            "path": "nvidia-container-runtime",
+            "runtimeArgs": []
+        }
+    }
+}
+EOF
+
+# Start Docker service
+sudo service docker start
+```
+
+### Run vLLM Server
+
+```bash
+# Switch to root user and create model storage directory
+sudo su
+mkdir -p /lssd/huggingface
+
+# Run vLLM container (replace <your hugging face hub token> with your Hugging Face token)
+docker run --runtime nvidia --gpus all \
+    -v /lssd/huggingface:/root/huggingface \
+    -e "HUGGING_FACE_HUB_TOKEN=<your hugging face hub token>" \
+    -e "VLLM_USE_V1=1" \
+    -e "VLLM_FLASH_ATTN_VERSION=2" \
+    -e "VLLM_ATTENTION_BACKEND=FLASHINFER" \
+    -e "VLLM_WORKER_MULTIPROC_METHOD=spawn" \
+    -p 8000:8000 \
+    --ipc=host \
+    vllm/vllm-openai:v0.9.0 \
+    --model deepseek-ai/DeepSeek-R1 \
+    --download_dir /root/huggingface \
+    --trust-remote-code \
+    --tensor-parallel-size 8 \
+    --disable-log-requests
+```
+
+### Performance Testing with LLMPerf
+
+LLMPerf is a professional large language model performance testing tool that provides detailed performance metrics.
+
+1. **Install LLMPerf**:
+
+```bash
+# Clone LLMPerf repository
+git clone https://github.com/ray-project/llmperf.git
+cd llmperf
+
+# Modify Python version requirements (if needed)
+# Edit pyproject.toml file, change:
+# requires-python = ">=3.8, <3.11"
+# to:
+# requires-python = ">=3.8, <=3.13"
+
+# Install LLMPerf
+pip install -e .
+```
+
+2. **Configure environment variables**:
+
+```bash
+export OPENAI_API_KEY=secret_abcdefg
+export OPENAI_API_BASE="http://localhost:8000/v1"
+```
+
+3. **Run performance benchmark**:
+
+```bash
+python3 token_benchmark_ray.py \
+--model "deepseek-ai/DeepSeek-R1" \
+--mean-input-tokens 1000 \
+--stddev-input-tokens 150 \
+--mean-output-tokens 1000 \
+--stddev-output-tokens 50 \
+--max-num-completed-requests 640 \
+--timeout 600 \
+--num-concurrent-requests 64 \
+--results-dir "result_outputs" \
+--llm-api openai \
+--additional-sampling-params '{}'
+```
+
+**Test parameter explanations**:
+- `--mean-input-tokens 1000`: Average number of input tokens
+- `--stddev-input-tokens 150`: Standard deviation of input token count
+- `--mean-output-tokens 1000`: Average number of output tokens
+- `--stddev-output-tokens 50`: Standard deviation of output token count
+- `--max-num-completed-requests 640`: Maximum number of completed requests
+- `--timeout 600`: Timeout in seconds
+- `--num-concurrent-requests 64`: Number of concurrent requests
+
+4. **View test results**:
+
+After the test completes, results will be saved in the `result_outputs` directory. You can view detailed performance metrics including:
+- Throughput (tokens/second)
+- Latency distribution
+- Time to first token (TTFT)
+- Inter-token latency
+- Error rate statistics
+
+### Advantages of Single Instance Deployment
+
+- **More direct control**: Direct access to system resources and configuration
+- **Simpler network configuration**: No complex Kubernetes networking setup required
+- **Easier debugging**: Direct access to container logs and system state
+- **Higher performance**: Reduced Kubernetes overhead
+- **More flexible resource management**: Precise control over memory and storage allocation

@@ -1,5 +1,7 @@
 # Single node inference benchmark of DeepSeek R1 671B with vLLM on A4 High GKE Node Pool
 
+English | [简体中文](README_CN.md)
+
 This recipe outlines the steps to benchmark the inference of a DeepSeek R1 671B model using [vLLM](https://github.com/vllm-project/vllm) on an [A4 High GKE Node pool](https://cloud.google.com/kubernetes-engine) with a single node.
 
 ## Orchestration and deployment tools

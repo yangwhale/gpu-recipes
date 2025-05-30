@@ -149,7 +149,7 @@ spec:
             --tensor-parallel-size {{ .Values.model.tp_size }} \
             --disable-log-requests
 
-            sleep infinity
+            #sleep infinity
 
         volumeMounts:
           - name: library-dir-host

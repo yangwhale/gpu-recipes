@@ -1,12 +1,6 @@
 # Note: The only choice is 'gke' or custom k8s + debian (else condition)
 targetPlatform: "gke"
 
-# targetNodes:
-# - gke-map-a4-gke-a4-highgpu-8g-a4-highg-8d40f2e9-3s5j
-# When using Kueue
-# queue: "multislice-queue"
-# queue: "a3-ultra"
-
 volumes:
   # The VM host path for SSDs is assumed at /mnt/stateful_partition/kube-ephemeral-ssd
   ssdMountPath: "/ssd"
@@ -18,14 +12,14 @@ volumes:
 
   # This requires GCS fuse CSI driver properly installed in the GKE cluster:
   # gcsMounts:
-  # - bucketName: "mhvictorhau" #"gs://mhvictorhau/mixtral8x7b"
+  # - bucketName: ""
   #   mountPath: "/gcs"
   
   # Just-in-Time GCS mounts. This requires 'gcsfuse' binary present in the main container:
   # Note: For expedience it was only implemented it for a single bucket (not an array). 
   # <GCS_BUCKET>: the name of your Cloud Storage bucket. Do not include the gs:// prefix
   jitGcsMount:
-    bucketName: "ali-b200"
+    bucketName: ""
     mountPath: "/gcs"
 
 gcsDownload: # downloads or synchronizes contents of a GCS bucket folder on initialization
@@ -33,11 +27,7 @@ gcsDownload: # downloads or synchronizes contents of a GCS bucket folder on init
   target: "/ssd/.cache/"
 
 workload:
-  #  image: "us-central1-docker.pkg.dev/supercomputer-testing/sufkha-nemo-demo-test/nemo:24.12-mpi"
-  # image: "us-central1-docker.pkg.dev/supercomputer-testing/sufkha-nemo-demo-test/nemo:02242025-mpi"
-  # image: "us-central1-docker.pkg.dev/agi-b200-451408/us-dockerhub-for-ngc/nemo:25.02-rc4-mpi-fp8"
-  image: "us-central1-docker.pkg.dev/ali-gpu-test/ali-gpu-poc/nemo:25.02-rc4-mpi-fp8"
-  # image: "us-central1-docker.pkg.dev/supercomputer-testing/sufkha-nemo-demo-test/nemo:25.02-rc4-mpi-fp8"
+  image: "us-central1-docker.pkg.dev/supercomputer-testing/sufkha-nemo-demo-test/nemo:25.02-rc4-mpi-fp8"
   torchDistributedTarget: "/opt/NeMo/examples/nlp/language_modeling/megatron_gpt_pretraining.py"
 
   gpus: 256 # This should be one of: {<= 8,  multiple of 8}
@@ -66,10 +56,6 @@ network:
 
   # As of 11/6 for RoCE
   pluginVersion: "us-docker.pkg.dev/kernel-net-team/clouda4-nccl-dev/nccl-plugin-gib:latest"
-  
-  # As of 10/26 for TCPxo:
-  # daemonVersion: "us-docker.pkg.dev/gce-ai-infra/gpudirect-tcpxo/tcpgpudmarxd-dev:v1.0.12"
-  # pluginVersion: "us-docker.pkg.dev/gce-ai-infra/gpudirect-tcpxo/nccl-plugin-gpudirecttcpx-dev:v1.0.6"
     
   ncclSettings:
   # Note: If you need to debug, using NCCL_DEBUG=INFO and NCCL_DEBUG_SUBSYS=INIT,NET are a good idea. You can look up other options.
@@ -79,7 +65,3 @@ network:
   #   value: "INIT,NET"
   - name: NCCL_ALGO
     value: "Ring,Tree"
-
-  # The following NCCL settings are recommended for TCPxo only (but tunable):
-  # - name: NCCL_MIN_NCHANNELS
-  #   value: "4"

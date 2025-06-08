@@ -15,13 +15,17 @@
 ARG VLLM_VERSION="latest"
 
 FROM docker.io/vllm/vllm-openai:${VLLM_VERSION}
+ARG VLLM_VERSION
 
-WORKDIR /vllm-workspace
-COPY ray_init.sh /vllm-workspace/ray_init.sh
+WORKDIR /workspace
+COPY ray_init.sh /workspace/ray_init.sh
 
-COPY requirements.txt /vllm-workspace/requirements.txt
+COPY requirements.txt /workspace/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN git clone https://github.com/vllm-project/vllm.git && cd vllm && mv vllm vllm_1
+RUN echo "Cloning vLLM version: ${VLLM_VERSION}" && \
+    git clone -b ${VLLM_VERSION} https://github.com/vllm-project/vllm.git && \
+    cd vllm && \
+    mv vllm vllm_1
 
 ENTRYPOINT [ "/bin/bash" ]

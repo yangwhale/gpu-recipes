@@ -1,0 +1,98 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+queue:
+dwsSettings:
+  maxRunDurationSeconds:
+
+tasSettings:
+  topologyRequest:
+    kueue.x-k8s.io/podset-preferred-topology: "cloud.google.com/gce-topology-block"
+
+volumes:
+  gcsVolumes: true
+  psVolumes: false
+  ssdMountPath: "/ssd"
+  nfs:
+    enabled: true
+    ip: "FILE_SERVER_IP" # 请使用实际的 Filestore IP
+    volume: "nfslarge"
+    region: "REGION_NAME" # 请使用实际的区域
+    instance: "FILESTORE_INSTANCE_NAME" # 请使用实际的 Filestore 实例名
+    storage: "10Ti"
+  pvcMounts:
+  - claimName: nfs-pvc
+    mountPath: "/mnt"
+  gcsMounts:
+  - bucketName:
+    mountPath: "/gcs"
+    mountOptions: "implicit-dirs"
+  - bucketName: cloud-samples-data
+    mountPath: "/artifacts"
+    mountOptions: "implicit-dirs"
+
+workload:
+  gpus: 16 # This should be one of: {<= 8,  multiple of 8}
+  image: 
+  defaultArguments[]:
+  arguments[]:
+  configFile: nemo-config.yaml
+  configPath: /workload/configs
+  envs:
+  - name: NEMO_CONFIG_PATH
+    value: "/workload/configs"
+  - name: NEMO_CONFIG_NAME
+    value: "nemo-config.yaml"
+  - name: EXPERIMENT_NAME
+    value: "nemo-experiments"
+  - name: EXPERIMENT_ROOT_DIR
+    value: "/job-logs"
+  - name: NVTE_FWD_LAYERNORM_SM_MARGIN
+    value: "8"
+  - name: NVTE_BWD_LAYERNORM_SM_MARGIN
+    value: "8"
+  - name: GLOO_SOCKET_IFNAME
+    value: "eth0"
+  - name: TOKENIZER_PATH
+    value: "/artifacts/third-party/tokenizers/gpt2"
+  - name: NEMO_LAUNCH_SCRIPT
+    value: "/opt/NeMo/examples/nlp/language_modeling/megatron_gpt_pretraining.py"
+  - name: TORCH_DISTRIBUTED_TRACING
+    value: "ALL"
+  - name: SSH_PUBLIC_KEY
+    value: ""
+  - name: SLEEP_INFINITY
+    value: "true"
+  - name: PAI_WORKSPACE_ROOT
+    value: "/mnt"
+  - name: SKIP_CLONE_REPO
+    value: "false"
+  - name: SKIP_DOWNLOAD_DATA
+    value: "true"
+  - name: SKIP_CHECKPOINT_CONVERSION
+    value: "true"
+  - name: SKIP_TRAINING
+    value: "false"
+  - name: HF_TOKEN
+    value: ""
+
+network:
+  hostNetwork: true
+  gibVersion: us-docker.pkg.dev/gce-ai-infra/gpudirect-gib/nccl-plugin-gib-diagnostic:v1.0.5
+  subnetworks[]:
+  ncclSettings:
+  - name: NCCL_DEBUG
+    value: "VERSION"
+  - name: NVTE_UB_SOCKET_IFNAME
+    value: "eth1"

@@ -79,9 +79,9 @@ workload:
   - name: SKIP_CLONE_REPO
     value: "false"
   - name: SKIP_DOWNLOAD_DATA
-    value: "true"
+    value: "false"
   - name: SKIP_CHECKPOINT_CONVERSION
-    value: "true"
+    value: "false"
   - name: SKIP_TRAINING
     value: "false"
   - name: HF_TOKEN

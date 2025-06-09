@@ -32,6 +32,26 @@ else
   echo "Step 2: Skipping data download (SKIP_DOWNLOAD_DATA=true or not rank 0)"
 fi
 
+# 创建唯一的同步目录 (仅使用JOB_ID)
+SYNC_DIR="$PAI_WORKSPACE/sync_flags_${JOB_ID}"
+
+# 节点0完成下载后创建标记文件
+if [[ "$JOB_COMPLETION_INDEX" -eq "0" ]]; then
+  echo "Creating unique sync directory and flag file to signal other nodes..."
+  mkdir -p $SYNC_DIR
+  touch $SYNC_DIR/download_complete_flag
+fi
+
+# 所有非0节点等待节点0完成下载
+if [[ "$JOB_COMPLETION_INDEX" -ne "0" ]]; then
+  echo "Node $JOB_COMPLETION_INDEX waiting for node 0 to complete downloads..."
+  while [[ ! -f $SYNC_DIR/download_complete_flag ]]; do
+    sleep 5
+    echo "Still waiting for download to complete on node 0..."
+  done
+  echo "Download complete flag detected, proceeding with checkpoint conversion."
+fi
+
 # -----------------------------------------------------------------------------
 # 功能3: 检查点转换
 # -----------------------------------------------------------------------------

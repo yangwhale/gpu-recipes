@@ -35,7 +35,9 @@ RUN apt update && apt install --yes --no-install-recommends \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
   && mkdir /gcs
 
+RUN apt update && apt install --yes ubuntu-drivers-common
+
 COPY requirements.txt /workspace/requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt
 
 ENTRYPOINT [ "/bin/bash" ]

@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
 # limitations under the License.
 
 apiVersion: v2
-name: maxtext_pretraining_workload
-description: maxtext_pretraining_workload_a3mega
+name: single-host-serving-deployment-template
+description: single-host-serving-deployment-template
 type: application
 version: 0.1.0
 appVersion: "1.16.0"

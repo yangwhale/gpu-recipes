@@ -175,41 +175,8 @@ mpirun --allow-run-as-root \
 --mca orte_keep_fqdn_hostnames 1 \
 --map-by slot \
 --mca plm_rsh_agent "ssh -q -o LogLevel=ERROR -o StrictHostKeyChecking=no" \
--x PATH \
--x NCCL_NET=gIB \
--x NCCL_CROSS_NIC=0 \
--x NCCL_NET_GDR_LEVEL=PIX \
--x NCCL_P2P_NET_CHUNKSIZE=131072 \
--x NCCL_NVLS_CHUNKSIZE=524288 \
--x NCCL_IB_ADAPTIVE_ROUTING=1 \
--x NCCL_IB_QPS_PER_CONNECTION=4 \
--x NCCL_IB_TC=52 \
--x NCCL_IB_FIFO_TC=84 \
--x NCCL_TUNER_CONFIG_PATH=/usr/local/gib/configs/tuner_config_a4.txtpb \
--x NCCL_SHIMNET_SHIM_LAYERS=UNUSED \
--x NCCL_DEBUG=version \
--x NCCL_MIN_NCHANNELS=32 \
--x NCCL_TUNER_PLUGIN=none \
--x LD_LIBRARY_PATH="/usr/local/gib/lib64:/usr/local/cuda-12.8/lib64" \
-./build/all_reduce_perf -b 2M -e 16G -f 2 -n 1 -g 1 -w 10
+bash -c "source /tmp/export_init_env.sh && ./build/all_reduce_perf -b 2M -e 16G -f 2 -n 1 -g 1 -w 10"
 ```
-
-### NCCL 优化参数
-
-测试平台为 A4 GPU 使用以下优化的 NCCL 设置：
-
-| 参数 | 值 | 描述 |
-|------|----|----- |
-| `NCCL_NET` | `gIB` | 使用 gIB 插件进行网络通信 |
-| `NCCL_CROSS_NIC` | `0` | 禁用跨 NIC 通信 |
-| `NCCL_NET_GDR_LEVEL` | `PIX` | GPU Direct RDMA 级别 |
-| `NCCL_P2P_NET_CHUNKSIZE` | `131072` | P2P 网络块大小 |
-| `NCCL_NVLS_CHUNKSIZE` | `524288` | NVLS 块大小 |
-| `NCCL_IB_ADAPTIVE_ROUTING` | `1` | 启用自适应路由 |
-| `NCCL_IB_QPS_PER_CONNECTION` | `4` | 每连接队列对数 |
-| `NCCL_IB_TC` | `52` | 流量类别 |
-| `NCCL_IB_FIFO_TC` | `84` | FIFO 流量类别 |
-| `NCCL_MIN_NCHANNELS` | `32` | 最小通道数 |
 
 ## 监控作业
 

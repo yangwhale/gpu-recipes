@@ -38,13 +38,22 @@ Models             | GPU Machine Type                                           
 
 ### Training benchmarks A4
 
-Models             | GPU Machine Type                                                                                     | Framework | Workload Type | Orchestrator | Link to the recipe
+Models             | GPU Machine Type                                                                                     | Framework / Library | Workload Type | Orchestrator | Link to the recipe
 ------------------ | ---------------------------------------------------------------------------------------------------- | --------- | ------------- | ------------ | ------------------
 **Llama-3.1-70B** | [A4 (NVIDIA B200)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#a4-vms)      | MaxText   | Pre-training  | GKE          | [Link](./training/a4/llama3-1-70b/maxtext-pretraining-gke/README.md)
 **Llama-3.1-70B** | [A4 (NVIDIA B200)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#a4-vms)      | NeMo      | Pre-training  | GKE          | [Link](./training/a4/llama3-1-70b/nemo-pretraining-gke/README.md)
 **Llama-3.1-405B** | [A4 (NVIDIA B200)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#a4-vms)      | MaxText   | Pre-training  | GKE          | [Link](./training/a4/llama3-1-405b/maxtext-pretraining-gke/README.md)
 **Llama-3.1-405B** | [A4 (NVIDIA B200)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#a4-vms)      | NeMo      | Pre-training  | GKE          | [Link](./training/a4/llama3-1-405b/nemo-pretraining-gke/README.md)
 **Mixtral-8-7B**   | [A4 (NVIDIA B200)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#a4-vms)      | NeMo      | Pre-training  | GKE          | [Link](./training/a4/mixtral-8x7b/nemo-pretraining-gke/README.md)
+**PaliGemma2**     | [A4 (NVIDIA B200)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#a4-vms)      | Hugging Face Accelerate | Finetuning | GKE     | [Link](./training/a4/paligemma2/README.md)
+
+### Training benchmarks A4X
+
+Models             | GPU Machine Type                                                                                     | Framework | Workload Type | Orchestrator | Link to the recipe
+------------------ | ---------------------------------------------------------------------------------------------------- | --------- | ------------- | ------------ | ------------------
+**Llama-3.1-8B** | [A4X (NVIDIA GB200)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#a4x-vms)      | NeMo   | Pre-training  | GKE          | [Link](./training/a4x/llama3-1-8b/nemo-pretraining-gke/)
+**Llama-3.1-70B** | [A4X (NVIDIA GB200)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#a4x-vms)      | NeMo      | Pre-training  | GKE          | [Link](./training/a4x/llama3-1-70b/nemo-pretraining-gke/)
+**Llama-3.1-405B** | [A4X (NVIDIA GB200)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#a4x-vms)      | NeMo      | Pre-training  | GKE          | [Link](./training/a4x/llama3-1-405b/nemo-pretraining-gke/)
 
 ### Inference benchmarks A3 Mega
 
@@ -70,6 +79,19 @@ Models             | GPU Machine Type                                           
 | ---------------- | ---------------- | --------- | ------------------- | ------------ | ------------------ |
 | **DeepSeek R1 671B**     | [A4 (NVIDIA B200)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#a4-vms)    | vLLM  | Inference   | GKE          | [Link](./inference/a4/single-host-serving/vllm/README.md)
 | **DeepSeek R1 671B**     | [A4 (NVIDIA B200)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#a4-vms)    | SGLang  | Inference   | GKE          | [Link](./inference/a4/single-host-serving/sglang/README.md)
+
+### Inference benchmarks G4
+
+| Models           | GPU Machine Type | Framework | Workload Type       | Orchestrator | Link to the recipe |
+| ---------------- | ---------------- | --------- | ------------------- | ------------ | ------------------ |
+| **Qwen3 8B**     | [G4 (NVIDIA RTX PRO 6000 Blackwell)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#g4-series)    | vLLM  | Inference   | GCE          | [Link](./inference/g4/qwen-8b/single-host-serving/vllm/README.md)
+| **Qwen3 30B A3B**| [G4 (NVIDIA RTX PRO 6000 Blackwell)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#g4-series)    | TensorRT-LLM  | Inference   | GCE          | [Link](./inference/g4/qwen3_30b_a3b/single-host-serving/tensorrt-llm/README.md)
+| **Qwen3 4B**     | [G4 (NVIDIA RTX PRO 6000 Blackwell)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#g4-series)    | TensorRT-LLM  | Inference   | GCE          | [Link](./inference/g4/qwen3_4b/single-host-serving/tensorrt-llm/README.md)
+| **Qwen3 8B**     | [G4 (NVIDIA RTX PRO 6000 Blackwell)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#g4-series)    | TensorRT-LLM  | Inference   | GCE          | [Link](./inference/g4/qwen3_8b/single-host-serving/tensorrt-llm/README.md)
+| **Qwen3 32B**    | [G4 (NVIDIA RTX PRO 6000 Blackwell)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#g4-series)    | TensorRT-LLM  | Inference   | GCE          | [Link](./inference/g4/qwen3_32b/single-host-serving/tensorrt-llm/README.md)
+| **Qwen3 32B**     | [G4 (NVIDIA RTX PRO 6000 Blackwell)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#g4-series)    | vLLM  | Inference   | GCE          | [Link](./inference/g4/single-host-serving/vllm/README.md)
+| **Llama3.1 70B** | [G4 (NVIDIA RTX PRO 6000 Blackwell)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#g4-series)    | TensorRT-LLM  | Inference   | GCE          | [Link](./inference/g4/llama3_1_70b/single-host-serving/tensorrt-llm/README.md)
+| **DeepSeek R1**  | [G4 (NVIDIA RTX PRO 6000 Blackwell)](https://cloud.google.com/compute/docs/accelerator-optimized-machines#g4-series)    | TensorRT-LLM  | Inference   | GCE          | [Link](./inference/g4/deepseek_r1/single-host-serving/tensorrt-llm/README.md)
 
 ### Checkpointing benchmarks
 

@@ -23,3 +23,6 @@ gcsVolumes:
   - name: gcs-checkpoints
     type: checkpoints
     bucketName:
+  - name: gcs-serving-model
+    type: serving-model
+    bucketName:

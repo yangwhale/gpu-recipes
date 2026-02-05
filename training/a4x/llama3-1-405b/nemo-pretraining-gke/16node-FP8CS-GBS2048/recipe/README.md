@@ -22,13 +22,6 @@ This recipe has been optimized for and tested with the following configuration:
 Please follow Cluster Toolkit [instructions](https://github.com/GoogleCloudPlatform/cluster-toolkit/tree/main/examples/gke-a4x)
 to create your a4x GKE cluster.
 
-> [NOTE]
-> **GKE version and workload placement**
->
-> For GKE cluster versions `1.34.0-gke.1502000` and later, workload placement is mandatory. You must provide your own placement policy name. You can do this by editing `values.yaml` to set `workload.nodeSelector.cloud.google.com/placement-policy-name`
->
-> For GKE cluster versions before `1.34.0-gke.1502000`, you can remove the `nodeSelector` section in `values.yaml`.
-
 ## Training dataset
 
 This recipe uses a mock pretraining dataset provided by the NeMo framework.
@@ -94,7 +87,6 @@ gcloud container clusters get-credentials $CLUSTER_NAME --region $CLUSTER_REGION
 To execute the job with the default settings, run the following command from
 your client:
 
-    ```bash
     cd $RECIPE_ROOT
     export WORKLOAD_NAME=$USER-a4x-llama3-1-405b
     helm install $WORKLOAD_NAME . -f values.yaml \
@@ -105,7 +97,6 @@ your client:
     --set volumes.gcsMounts[0].mountPath=/job-logs \
     --set workload.envs[0].value=/job-logs/$WORKLOAD_NAME \
     --set queue=${KUEUE_NAME}
-    ```
 
 **Examples**
 
